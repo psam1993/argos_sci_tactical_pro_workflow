@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planejamento | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i data-lucide="shield"></i> <span>ARGOS SCI</span></div>
+        <nav class="nav">
+            <a href="index.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
+            <a href="incidente.html"><i data-lucide="file-text"></i> <span>Configuração SCI</span></a>
+            <a href="mapa.html"><i data-lucide="map"></i> <span>Mapa Tático</span></a>
+            <a href="workflow.html"><i data-lucide="git-merge"></i> <span>Workflow PO</span></a>
+            <a href="painel_papel.html"><i data-lucide="user-cog"></i> <span>Painel por Papel</span></a>
+            <a href="planejamento.html"><i data-lucide="clipboard-list"></i> <span>Planejamento</span></a>
+            <a href="operacoes.html"><i data-lucide="swords"></i> <span>Operações</span></a>
+            <a href="logistica.html"><i data-lucide="truck"></i> <span>Logística</span></a>
+            <a href="admfin.html"><i data-lucide="wallet"></i> <span>Adm/Fin</span></a>
+            <a href="seguranca.html"><i data-lucide="hard-hat"></i> <span>Segurança</span></a>
+            <a href="informacao_publica.html"><i data-lucide="megaphone"></i> <span>Info Pública</span></a>
+            <a href="ligacoes.html"><i data-lucide="handshake"></i> <span>Ligações</span></a>
+            <a href="equipes.html"><i data-lucide="users"></i> <span>Recursos</span></a>
+            <a href="relatorios.html"><i data-lucide="printer"></i> <span>Relatórios / PAI</span></a>
+        </nav>
+        <div style="background: #ffffff05; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <div class="badge badge-ok" style="margin-bottom: 5px;">Sistema Online</div>
+            <div style="font-size: 11px; color: var(--muted);">Cuiabá/MT - Planejamento</div>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <span class="muted" style="font-size: 13px;">INCIDENTE ATIVO:</span> 
+                <strong style="letter-spacing: 0.5px;">#SCI-2026-004</strong>
+            </div>
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--warn);">PO-02 EM CURSO</div>
+                    <div class="muted" style="font-size: 10px;">FECHAMENTO: 14 JAN 06:00</div>
+                </div>
+                <div style="width:38px; height:38px; background:var(--brand); border-radius:10px; display:grid; place-items:center; font-weight:bold; color:#000; cursor:pointer;">RS</div>
+            </div>
+        </header>
+        <section class="content">
+<div class="grid cols-2">
+  <div class="card">
+    <h2><i data-lucide="clipboard-list"></i> Planejamento (PO)</h2>
+    <p class="muted">Objetivos, situação, riscos e projeção. Ao salvar, marca o gate de Planejamento no Workflow.</p>
+
+    <div class="grid" style="gap:12px;">
+      <div>
+        <label>Resumo da Situação</label>
+        <textarea id="pl_sit" rows="5" placeholder="Perímetro, meteorologia, ameaças, prioridades..."></textarea>
+      </div>
+      <div>
+        <label>Objetivos do PO</label>
+        <textarea id="pl_obj" rows="5" placeholder="1) ... 2) ... 3) ..."></textarea>
+      </div>
+      <div>
+        <label>Riscos e Mitigações</label>
+        <textarea id="pl_risk" rows="4" placeholder="Risco: ... | Mitigação: ..."></textarea>
+      </div>
+      <div>
+        <label>Projeção (próximas 6–12h)</label>
+        <textarea id="pl_proj" rows="3" placeholder="Tendências, vento, topografia, expansão provável..."></textarea>
+      </div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" onclick="savePlan()"><i data-lucide="save"></i> Salvar Planejamento</button>
+        <a class="btn btn-secondary" href="workflow.html"><i data-lucide="git-merge"></i> Ver Workflow</a>
+      </div>
+      <div id="pl_lock" class="badge badge-danger" style="display:none; width:fit-content;">PO BLOQUEADO (Somente leitura)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><i data-lucide="file-text"></i> Dicas por Nível</h2>
+    <div id="pl_hint" class="muted" style="font-size:13px; line-height:1.5;"></div>
+  </div>
+</div>
+
+<script>
+function lvl(){ return (Store.get('argos_inc', ARGOS.inc||{})?.level)||'Nível 2'; }
+
+function renderHints(){
+  const l = lvl();
+  let txt = '';
+  if(l==='Nível 1'){
+    txt = '• Planejamento pode ser conduzido pelo próprio CI/OP.<br>• Foque em objetivos curtos, riscos imediatos e necessidades básicas.<br>• Produza um PAI simples e execute.';
+  }else if(l==='Nível 2'){
+    txt = '• Consolidar situação + objetivos + projeção (PO) para briefing.<br>• Comece a registrar versões do PAI no Workflow.<br>• Antecipe necessidades logísticas e comunicações.';
+  }else{
+    txt = '• Detalhe projeções por setores/divisões e cenários alternativos.<br>• Integre situação (mapa/perímetro), recursos, segurança e comunicação.<br>• Versione PAI com disciplina e mantenha auditoria de mudanças.';
+  }
+  document.getElementById('pl_hint').innerHTML = txt;
+}
+
+function loadPlan(){
+  const d = Store.get('plan_form', {});
+  pl_sit.value = d.sit || '';
+  pl_obj.value = d.obj || '';
+  pl_risk.value = d.risk || '';
+  pl_proj.value = d.proj || '';
+}
+
+function applyLock(){
+  if(isLocked()){
+    document.querySelectorAll('textarea, input, select, button.btn-primary').forEach(el=>el.disabled=true);
+    document.getElementById('pl_lock').style.display='inline-block';
+    ARGOS.toast('PO bloqueado: somente leitura.');
+  }
+}
+
+function savePlan(){
+  if(isLocked()){ ARGOS.toast('PO bloqueado.'); return; }
+  const payload = {
+    sit: pl_sit.value.trim(),
+    obj: pl_obj.value.trim(),
+    risk: pl_risk.value.trim(),
+    proj: pl_proj.value.trim(),
+    updated_at: new Date().toISOString()
+  };
+  Store.set('plan_form', payload);
+  markProgress('plan', true);
+  WF.bumpVersion('Planejamento atualizado');
+  ARGOS.toast('Planejamento salvo e gate marcado.');
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadPlan();
+  renderHints();
+  applyLock();
+});
+</script>
+</section>
+    </div>
+    <script src="assets/app.js"></script>
+</body>
+</html>

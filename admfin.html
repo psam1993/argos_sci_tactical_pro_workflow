@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adm/Fin | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i data-lucide="shield"></i> <span>ARGOS SCI</span></div>
+        <nav class="nav">
+            <a href="index.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
+            <a href="incidente.html"><i data-lucide="file-text"></i> <span>Configuração SCI</span></a>
+            <a href="mapa.html"><i data-lucide="map"></i> <span>Mapa Tático</span></a>
+            <a href="workflow.html"><i data-lucide="git-merge"></i> <span>Workflow PO</span></a>
+            <a href="painel_papel.html"><i data-lucide="user-cog"></i> <span>Painel por Papel</span></a>
+            <a href="planejamento.html"><i data-lucide="clipboard-list"></i> <span>Planejamento</span></a>
+            <a href="operacoes.html"><i data-lucide="swords"></i> <span>Operações</span></a>
+            <a href="logistica.html"><i data-lucide="truck"></i> <span>Logística</span></a>
+            <a href="admfin.html"><i data-lucide="wallet"></i> <span>Adm/Fin</span></a>
+            <a href="seguranca.html"><i data-lucide="hard-hat"></i> <span>Segurança</span></a>
+            <a href="informacao_publica.html"><i data-lucide="megaphone"></i> <span>Info Pública</span></a>
+            <a href="ligacoes.html"><i data-lucide="handshake"></i> <span>Ligações</span></a>
+            <a href="equipes.html"><i data-lucide="users"></i> <span>Recursos</span></a>
+            <a href="relatorios.html"><i data-lucide="printer"></i> <span>Relatórios / PAI</span></a>
+        </nav>
+        <div style="background: #ffffff05; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <div class="badge badge-ok" style="margin-bottom: 5px;">Sistema Online</div>
+            <div style="font-size: 11px; color: var(--muted);">Cuiabá/MT - Adm/Fin</div>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <span class="muted" style="font-size: 13px;">INCIDENTE ATIVO:</span> 
+                <strong style="letter-spacing: 0.5px;">#SCI-2026-004</strong>
+            </div>
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--warn);">PO-02 EM CURSO</div>
+                    <div class="muted" style="font-size: 10px;">FECHAMENTO: 14 JAN 06:00</div>
+                </div>
+                <div style="width:38px; height:38px; background:var(--brand); border-radius:10px; display:grid; place-items:center; font-weight:bold; color:#000; cursor:pointer;">RS</div>
+            </div>
+        </header>
+        <section class="content">
+<div class="grid cols-2">
+  <div class="card">
+    <h2><i data-lucide="wallet"></i> Administração / Finanças</h2>
+    <p class="muted">Registro de custos, horas e despesas. Em Nível 1 pode ser opcional; em Nível 3 é essencial.</p>
+
+    <div style="display:grid; gap:12px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label>Horas de Equipe (resumo)</label>
+          <textarea id="ad_hours" rows="4" placeholder="Ex.: GUA-01 06h, GUA-05 04h..."></textarea>
+        </div>
+        <div>
+          <label>Custos / Despesas</label>
+          <textarea id="ad_costs" rows="4" placeholder="Combustível, alimentação, manutenção, diárias..."></textarea>
+        </div>
+      </div>
+      <div>
+        <label>Contratos / Apoio Externo (se houver)</label>
+        <textarea id="ad_contracts" rows="3" placeholder="Ex.: empresa X - caminhão pipa - OS nº..."></textarea>
+      </div>
+      <div>
+        <label>Observações / Evidências</label>
+        <textarea id="ad_notes" rows="3" placeholder="Notas fiscais, autorização, registros..."></textarea>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" onclick="saveAdm()"><i data-lucide="save"></i> Salvar Adm/Fin</button>
+        <a class="btn btn-secondary" href="workflow.html"><i data-lucide="git-merge"></i> Ver Workflow</a>
+      </div>
+      <div id="ad_lock" class="badge badge-danger" style="display:none; width:fit-content;">PO BLOQUEADO (Somente leitura)</div>
+
+      <div style="margin-top:6px; padding:12px; border:1px dashed var(--border); border-radius:12px; background:#ffffff05;">
+        <div class="stat-label">REGRA DINÂMICA</div>
+        <div class="muted" style="font-size:13px; margin-top:6px; line-height:1.4">
+          • Em <b>Nível 1</b>, Adm/Fin pode ficar “pendente” sem impedir revisão/aprovação.<br>
+          • Em <b>Nível 3</b>, recomenda-se marcar este gate como OK antes da aprovação.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><i data-lucide="info"></i> Orientação por Nível</h2>
+    <div id="ad_hint" class="muted" style="font-size:13px; line-height:1.5;"></div>
+  </div>
+</div>
+
+<script>
+function lvl(){ return (Store.get('argos_inc', ARGOS.inc||{})?.level)||'Nível 2'; }
+
+function renderHints(){
+  const l = lvl();
+  let txt = '';
+  if(l==='Nível 1'){
+    txt = '• Mantenha um resumo simples: horas e gastos principais.<br>• Registre o mínimo para rastreabilidade.';
+  }else if(l==='Nível 2'){
+    txt = '• Registre horas por equipe/viatura e custos de logística.<br>• Ajuda na tomada de decisão e prestação de contas.';
+  }else{
+    txt = '• Controle detalhado de custos e contratos é crítico.<br>• Prepare evidências para auditoria e relatórios pós-incidente.';
+  }
+  document.getElementById('ad_hint').innerHTML = txt;
+}
+
+function load(){
+  const d = Store.get('adm_form', {});
+  ad_hours.value = d.hours || '';
+  ad_costs.value = d.costs || '';
+  ad_contracts.value = d.contracts || '';
+  ad_notes.value = d.notes || '';
+}
+
+function saveAdm(){
+  if(isLocked()){ ARGOS.toast('PO bloqueado.'); return; }
+  const payload = {
+    hours: ad_hours.value.trim(),
+    costs: ad_costs.value.trim(),
+    contracts: ad_contracts.value.trim(),
+    notes: ad_notes.value.trim(),
+    updated_at: new Date().toISOString()
+  };
+  Store.set('adm_form', payload);
+  // Gate adm é "soft" em níveis menores; mas marcamos como feito se tiver algo preenchido
+  const filled = !!(payload.hours || payload.costs || payload.contracts || payload.notes);
+  markProgress('adm', filled);
+  WF.bumpVersion('Adm/Fin atualizado');
+  ARGOS.toast('Adm/Fin salvo.');
+}
+
+function applyLock(){
+  if(isLocked()){
+    document.querySelectorAll('textarea, button.btn-primary').forEach(el=>el.disabled=true);
+    document.getElementById('ad_lock').style.display='inline-block';
+    ARGOS.toast('PO bloqueado: somente leitura.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{ load(); renderHints(); applyLock(); });
+</script>
+</section>
+    </div>
+    <script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow PO | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i data-lucide="shield"></i> <span>ARGOS SCI</span></div>
+        <nav class="nav">
+            <a href="index.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
+            <a href="incidente.html"><i data-lucide="file-text"></i> <span>Configuração SCI</span></a>
+            <a href="mapa.html"><i data-lucide="map"></i> <span>Mapa Tático</span></a>
+            <a href="workflow.html"><i data-lucide="git-merge"></i> <span>Workflow PO</span></a>
+            <a href="painel_papel.html"><i data-lucide="user-cog"></i> <span>Painel por Papel</span></a>
+            <a href="planejamento.html"><i data-lucide="clipboard-list"></i> <span>Planejamento</span></a>
+            <a href="operacoes.html"><i data-lucide="swords"></i> <span>Operações</span></a>
+            <a href="logistica.html"><i data-lucide="truck"></i> <span>Logística</span></a>
+            <a href="admfin.html"><i data-lucide="wallet"></i> <span>Adm/Fin</span></a>
+            <a href="seguranca.html"><i data-lucide="hard-hat"></i> <span>Segurança</span></a>
+            <a href="informacao_publica.html"><i data-lucide="megaphone"></i> <span>Info Pública</span></a>
+            <a href="ligacoes.html"><i data-lucide="handshake"></i> <span>Ligações</span></a>
+            <a href="equipes.html"><i data-lucide="users"></i> <span>Recursos</span></a>
+            <a href="relatorios.html"><i data-lucide="printer"></i> <span>Relatórios / PAI</span></a>
+        </nav>
+        <div style="background: #ffffff05; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <div class="badge badge-ok" style="margin-bottom: 5px;">Sistema Online</div>
+            <div style="font-size: 11px; color: var(--muted);">Cuiabá/MT - Workflow PO</div>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <span class="muted" style="font-size: 13px;">INCIDENTE ATIVO:</span> 
+                <strong style="letter-spacing: 0.5px;">#SCI-2026-004</strong>
+            </div>
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--warn);">PO-02 EM CURSO</div>
+                    <div class="muted" style="font-size: 10px;">FECHAMENTO: 14 JAN 06:00</div>
+                </div>
+                <div style="width:38px; height:38px; background:var(--brand); border-radius:10px; display:grid; place-items:center; font-weight:bold; color:#000; cursor:pointer;">RS</div>
+            </div>
+        </header>
+        <section class="content">
+<div class="grid cols-2">
+  <div class="card">
+    <h2><i data-lucide="git-merge"></i> Workflow do Período Operacional (PO)</h2>
+    <p class="muted" style="font-size:13px; margin-top:-5px;">
+      Ciclo do SCI: <b>Planejar → Revisar → Aprovar → Executar → Encerrar</b>.  
+      O PO controla: checklist (gates), trilha de aprovações, snapshots do PAI e bloqueio de edição ao encerrar.
+    </p>
+
+    <div id="wfKpis" class="grid cols-3" style="margin-top:15px;"></div>
+
+    <h3 style="margin-top:20px;">Checklist (gates)</h3>
+<div id="wfReq" class="muted" style="font-size:12px; margin-top:-6px;">Gates obrigatórios por nível: ...</div>
+    <table class="table" id="wfChecklist"></table>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;">
+      <button class="btn btn-secondary" onclick="wfBackDraft()">Voltar p/ Rascunho</button>
+      <button class="btn btn-primary" onclick="wfRequestReview()">Enviar p/ Revisão</button>
+      <button class="btn btn-secondary" onclick="wfApprove()">Aprovar PO</button>
+      <button class="btn btn-danger" onclick="wfClose()">Encerrar PO (bloquear)</button>
+<button class="btn btn-secondary" onclick="wfNextPO()"><i data-lucide="fast-forward"></i> Iniciar Próximo PO</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><i data-lucide="list-checks"></i> Auditoria: Aprovações e Versões</h2>
+
+    <div class="grid" style="gap:10px; grid-template-columns: 1fr 1fr; margin-top:10px;">
+      <div>
+        <div class="muted" style="font-size:12px; font-weight:700; margin-bottom:6px;">Aprovações</div>
+        <table class="table" id="wfAp"></table>
+      </div>
+      <div>
+        <div class="muted" style="font-size:12px; font-weight:700; margin-bottom:6px;">Versões do PAI (snapshots)</div>
+        <table class="table" id="wfVer"></table>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;">
+      <button class="btn btn-secondary" onclick="wfNewVersion()"><i data-lucide="copy-plus"></i> Gerar versão</button>
+      <a class="btn btn-secondary" href="relatorios.html"><i data-lucide="printer"></i> Relatórios</a>
+      <a class="btn btn-secondary" href="operacoes.html"><i data-lucide="swords"></i> Operações</a>
+    </div>
+
+    <div style="margin-top:18px; padding:12px; border:1px dashed var(--border); border-radius:12px; background:#ffffff05;">
+      <div class="muted" style="font-size:12px; font-weight:700;">Como funciona (dinâmico)</div>
+      <div style="font-size:13px; margin-top:6px; color: var(--muted); line-height:1.4">
+        • Ao salvar Planejamento/Operações/Logística/AdmFin, o sistema marca os gates automaticamente.<br>
+        • “Enviar p/ Revisão” exige gates mínimos: <b>Planejamento + Operações + Logística</b>.<br>
+        • “Encerrar PO” ativa <b>somente leitura</b> nas telas (protege o PAI).
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function esc(s){ return (s||'').toString().replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+
+
+function wfRender(){
+  const level = getIncidentLevel();
+  const req = requiredGates(level);
+  const reqLabel = req.map(k=>({plan:'Planejamento',ops:'Operações',log:'Logística',adm:'Adm/Fin',safety:'Segurança',pio:'Info Pública',lno:'Ligações'}[k]||k)).join(' + ');
+  const wfReq = document.getElementById('wfReq');
+  if(wfReq) wfReq.innerHTML = `Gates obrigatórios para <b>${level}</b>: <b>${reqLabel}</b>.`;
+
+  const po = WF.getPO();
+  const lock = isLocked();
+
+  // KPIs
+  const k = document.getElementById('wfKpis');
+  k.innerHTML = `
+    <div class="card" style="padding:14px;">
+      <div class="stat-label">PO</div>
+      <div style="font-size:18px; font-weight:800; margin-top:4px;">${po.id}</div>
+    </div>
+    <div class="card" style="padding:14px;">
+      <div class="stat-label">STATUS</div>
+      <div style="font-size:18px; font-weight:800; margin-top:4px;">${po.status}</div>
+    </div>
+    <div class="card" style="padding:14px;">
+      <div class="stat-label">EDIÇÃO</div>
+      <div style="font-size:18px; font-weight:800; margin-top:4px; color:${lock?'var(--danger)':'var(--brand)'}">
+        ${lock ? 'Bloqueada' : 'Aberta'}
+      </div>
+    </div>
+  `;
+
+  // Checklist
+  const labels = {plan:'Planejamento', ops:'Operações', log:'Logística', adm:'Adm/Fin', safety:'Segurança', pio:'Info Pública'};
+  const rows = Object.entries(po.checklist).map(([key,val])=>{
+    const badge = val.done ? 'badge-ok' : 'badge-warn';
+    const txt = val.done ? 'OK' : 'Pendente';
+    return `<tr>
+      <td><strong>${labels[key]||key}</strong></td>
+      <td><span class="badge ${badge}">${txt}</span></td>
+      <td class="muted">${esc(val.note||'')}</td>
+      <td>
+        <button class="btn btn-secondary" style="padding:8px 10px; font-size:12px;" onclick="wfToggle('${key}')">
+          ${val.done ? 'Marcar pendente' : 'Marcar OK'}
+        </button>
+      </td>
+    </tr>`;
+  }).join('');
+  document.getElementById('wfChecklist').innerHTML = `
+    <thead><tr><th>Área</th><th>Status</th><th>Nota</th><th>Ação</th></tr></thead>
+    <tbody>${rows}</tbody>
+  `;
+
+  // Approvals
+  const ap = po.aprovacoes || [];
+  document.getElementById('wfAp').innerHTML = `
+    <thead><tr><th>Quando</th><th>Papel</th><th>Ação</th></tr></thead>
+    <tbody>
+      ${ap.length ? ap.map(x=>`
+        <tr><td>${esc(x.quando)}</td><td>${esc(x.papel)} • ${esc(x.nome)}</td><td>${esc(x.acao)}</td></tr>
+      `).join('') : `<tr><td colspan="3" class="muted">Sem registros</td></tr>`}
+    </tbody>
+  `;
+
+  // Versions
+  const ver = po.versoes || [];
+  document.getElementById('wfVer').innerHTML = `
+    <thead><tr><th>V</th><th>Quando</th><th>Hash</th></tr></thead>
+    <tbody>
+      ${ver.length ? ver.map(v=>`
+        <tr><td>v${v.v}</td><td>${esc(v.quando)}</td><td><span class="badge badge-ok">${esc(v.hash)}</span></td></tr>
+      `).join('') : `<tr><td colspan="3" class="muted">Nenhuma versão</td></tr>`}
+    </tbody>
+  `;
+}
+
+function wfToggle(key){
+  const po = WF.getPO();
+  const cur = !!po.checklist[key]?.done;
+  WF.mark(key, !cur);
+  ARGOS.toast('Checklist atualizado.');
+  wfRender();
+}
+
+function wfRequestReview(){
+  if(isLocked()){ ARGOS.toast('PO bloqueado/encerrado.'); return; }
+  if(!requiredGatesOK()){ ARGOS.toast('Gates obrigatórios pendentes para ' + getIncidentLevel() + ': ' + requiredGates().join(', ').toUpperCase()); return; }
+  WF.setStatus('Em revisão', false);
+  WF.addApproval({papel:'CI', nome:'(definir)', acao:'Enviado para revisão', comentario:'Gates mínimos OK.'});
+  WF.bumpVersion('Envio para revisão (snapshot)');
+  ARGOS.toast('PO enviado para revisão.');
+  wfRender();
+}
+
+function wfApprove(){
+  if(isLocked()){ ARGOS.toast('PO bloqueado/encerrado.'); return; }
+  if(!requiredGatesOK()){ ARGOS.toast('Não pode aprovar. Pendências (' + getIncidentLevel() + '): ' + requiredGates().join(', ').toUpperCase()); return; }
+  WF.setStatus('Aprovado', false);
+  WF.addApproval({papel:'CI', nome:'(definir)', acao:'Aprovado', comentario:'PAI validado para execução.'});
+  WF.bumpVersion('PAI aprovado');
+  ARGOS.toast('PO aprovado.');
+  wfRender();
+}
+
+function wfClose(){
+  const po = WF.getPO();
+  if(po.status !== 'Aprovado'){
+    ARGOS.toast('Recomendação: aprovar antes de encerrar.');
+  }
+  WF.setStatus('Encerrado', true);
+  WF.addApproval({papel:'CI', nome:'(definir)', acao:'Encerrado', comentario:'Edição bloqueada; iniciar próximo PO.'});
+  WF.bumpVersion('Encerramento do PO');
+  ARGOS.toast('PO encerrado (somente leitura).');
+  wfRender();
+}
+
+function wfBackDraft(){
+  if(isLocked()){
+    // permitir voltar mesmo bloqueado (demo): reabre
+    WF.setStatus('Rascunho', false);
+  } else {
+    WF.setStatus('Rascunho', false);
+  }
+  WF.addApproval({papel:'CI', nome:'(definir)', acao:'Retornado a rascunho', comentario:'Ajustes solicitados.'});
+  ARGOS.toast('PO em rascunho (edição aberta).');
+  wfRender();
+}
+
+function wfNewVersion(){
+  if(isLocked()){ ARGOS.toast('PO bloqueado: apenas leitura.'); return; }
+  const resumo = prompt('Resumo da alteração (ex.: “Novo objetivo / missão / recurso”)', 'Atualização');
+  if(resumo === null) return;
+  WF.bumpVersion(resumo);
+  ARGOS.toast('Versão gerada.');
+  wfRender();
+}
+
+
+function wfNextPO(){
+  // só permite iniciar próximo PO se o atual estiver encerrado
+  const po = WF.getPO();
+  if(!isLocked()){
+    ARGOS.toast('Encerrar o PO atual antes de iniciar o próximo.');
+    return;
+  }
+  // Arquiva PO encerrado em histórico
+  const hist = Store.get('wf_po_history', []);
+  hist.unshift(po);
+  Store.set('wf_po_history', hist);
+
+  // Calcula próximo número
+  const m = (po.id||'PO-01').match(/PO-(\d+)/i);
+  const n = m ? (parseInt(m[1],10)+1) : 1;
+  const nextId = 'PO-' + String(n).padStart(2,'0');
+
+  const next = WF.defaultPO();
+  next.id = nextId;
+  next.janela = 'Definir janela do PO';
+  next.status = 'Rascunho';
+  next.bloqueado = false;
+  next.aprovacoes = [];
+  next.versoes = [];
+  WF.setPO(next);
+
+  // Reseta progresso
+  Store.set('secProgress', {plan:false, ops:false, log:false, adm:false, safety:false, pio:false, lno:false});
+  ARGOS.toast('Próximo PO iniciado: ' + nextId);
+  wfRender();
+}
+
+document.addEventListener('DOMContentLoaded', wfRender);
+
+</script>
+</section>
+    </div>
+    <script src="assets/app.js"></script>
+</body>
+</html>

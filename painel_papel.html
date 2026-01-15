@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel por Papel | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i data-lucide="shield"></i> <span>ARGOS SCI</span></div>
+        <nav class="nav">
+            <a href="index.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
+            <a href="incidente.html"><i data-lucide="file-text"></i> <span>Configuração SCI</span></a>
+            <a href="mapa.html"><i data-lucide="map"></i> <span>Mapa Tático</span></a>
+            <a href="workflow.html"><i data-lucide="git-merge"></i> <span>Workflow PO</span></a>
+            <a href="painel_papel.html"><i data-lucide="user-cog"></i> <span>Painel por Papel</span></a>
+            <a href="planejamento.html"><i data-lucide="clipboard-list"></i> <span>Planejamento</span></a>
+            <a href="operacoes.html"><i data-lucide="swords"></i> <span>Operações</span></a>
+            <a href="logistica.html"><i data-lucide="truck"></i> <span>Logística</span></a>
+            <a href="admfin.html"><i data-lucide="wallet"></i> <span>Adm/Fin</span></a>
+            <a href="seguranca.html"><i data-lucide="hard-hat"></i> <span>Segurança</span></a>
+            <a href="informacao_publica.html"><i data-lucide="megaphone"></i> <span>Info Pública</span></a>
+            <a href="ligacoes.html"><i data-lucide="handshake"></i> <span>Ligações</span></a>
+            <a href="equipes.html"><i data-lucide="users"></i> <span>Recursos</span></a>
+            <a href="relatorios.html"><i data-lucide="printer"></i> <span>Relatórios / PAI</span></a>
+        </nav>
+        <div style="background: #ffffff05; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <div class="badge badge-ok" style="margin-bottom: 5px;">Sistema Online</div>
+            <div style="font-size: 11px; color: var(--muted);">Cuiabá/MT - Painel por Papel</div>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <span class="muted" style="font-size: 13px;">INCIDENTE ATIVO:</span> 
+                <strong style="letter-spacing: 0.5px;">#SCI-2026-004</strong>
+            </div>
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--warn);">PO-02 EM CURSO</div>
+                    <div class="muted" style="font-size: 10px;">FECHAMENTO: 14 JAN 06:00</div>
+                </div>
+                <div style="width:38px; height:38px; background:var(--brand); border-radius:10px; display:grid; place-items:center; font-weight:bold; color:#000; cursor:pointer;">RS</div>
+            </div>
+        </header>
+        <section class="content">
+<div class="grid cols-2">
+  <div class="card">
+    <h2><i data-lucide="user-cog"></i> Painel por Papel (SCI)</h2>
+    <p class="muted">Escolha um papel para ver responsabilidades, entregáveis do PO e o que está pendente no workflow.</p>
+
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:15px;">
+      <button class="btn btn-secondary" onclick="setRole('CI')"><i data-lucide="shield"></i> Comandante do Incidente (CI)</button>
+      <button class="btn btn-secondary" onclick="setRole('OPS')"><i data-lucide="swords"></i> Operações</button>
+      <button class="btn btn-secondary" onclick="setRole('PLAN')"><i data-lucide="clipboard-list"></i> Planejamento</button>
+      <button class="btn btn-secondary" onclick="setRole('LOG')"><i data-lucide="truck"></i> Logística</button>
+      <button class="btn btn-secondary" onclick="setRole('ADM')"><i data-lucide="wallet"></i> Adm/Fin</button>
+      <button class="btn btn-secondary" onclick="setRole('SAFE')"><i data-lucide="hard-hat"></i> Segurança</button>
+      <button class="btn btn-secondary" onclick="setRole('PIO')"><i data-lucide="megaphone"></i> Info Pública (PIO)</button>
+      <button class="btn btn-secondary" onclick="setRole('LNO')"><i data-lucide="handshake"></i> Ligações (LNO)</button>
+    </div>
+
+    <div style="margin-top:18px; padding:14px; border:1px solid var(--border); border-radius:12px;">
+      <div class="stat-label">NÍVEL DE COMPLEXIDADE</div>
+      <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="setLevel('Nível 1')">Nível 1</button>
+        <button class="btn btn-secondary" onclick="setLevel('Nível 2')">Nível 2</button>
+        <button class="btn btn-secondary" onclick="setLevel('Nível 3')">Nível 3</button>
+      </div>
+      <div class="muted" style="font-size:12px; margin-top:8px;">
+        Isso altera o “tamanho” do SCI sugerido (quem precisa estar ativo no PO).
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><i data-lucide="list-todo"></i> Orientações Dinâmicas</h2>
+    <div id="roleBox"></div>
+  </div>
+</div>
+
+<script>
+const ROLE_TEXT = {
+  CI: {
+    title: 'Comandante do Incidente (CI)',
+    why: 'Define objetivos, estratégia e aprova o PAI. Mantém a unidade de comando e coordena o staff.',
+    deliver: ['Ativar/ajustar SCI (nível)', 'Aprovar PO/PAI', 'Definir objetivos do período', 'Garantir segurança como prioridade'],
+    next: ['Validar gates mínimos no Workflow PO', 'Resolver pendências críticas entre seções', 'Encerrar PO após execução']
+  },
+  OPS: {
+    title: 'Chefia de Operações',
+    why: 'Executa a estratégia com missões e recursos. Coordena divisões/setores e reporta progresso.',
+    deliver: ['Definir missões e setores', 'Designar recursos', 'Atualizar status das missões', 'Reportar evolução para Planejamento'],
+    next: ['Abrir Operações e registrar missões', 'Validar recursos em Recursos', 'Garantir comunicação/coordenação com Logística']
+  },
+  PLAN: {
+    title: 'Chefia de Planejamento',
+    why: 'Constrói a consciência situacional e produz o PAI: objetivos, situação, projeção e plano do PO.',
+    deliver: ['Situação/Perímetro', 'Objetivos do PO', 'Riscos e projeção', 'Consolidar PAI (versões)'],
+    next: ['Abrir Planejamento e salvar o formulário', 'Gerar versão do PAI no Workflow', 'Preparar briefing do PO']
+  },
+  LOG: {
+    title: 'Chefia de Logística',
+    why: 'Garante apoio: suprimentos, comunicações, alimentação, combustível, manutenção e facilidades.',
+    deliver: ['Plano de comunicações (quando aplicável)', 'Apoio às equipes em campo', 'Ressuprimento e transporte', 'Pendências logísticas'],
+    next: ['Abrir Logística e registrar necessidades', 'Confirmar status de recursos', 'Validar gate de Logística no Workflow']
+  },
+  ADM: {
+    title: 'Adm/Fin',
+    why: 'Registra custos, horas, contratos e aquisição/consumo de recursos (necessário em incidentes maiores).',
+    deliver: ['Controle de horas/custos', 'Registro de despesas', 'Contratos/apoio', 'Documentação administrativa'],
+    next: ['Abrir Adm/Fin e registrar apontamentos', 'Manter evidências para auditoria', 'Atualizar gate (quando aplicável)']
+  },
+  PIO: {
+    title: 'Informação Pública (PIO)',
+    why: 'Planeja e coordena mensagens públicas, orientações e alinhamento institucional com imprensa/comunidade.',
+    deliver: ['Mensagem pública do PO', 'Orientações à comunidade', 'Alinhamento institucional', 'Registro de versões/publicação'],
+    next: ['Abrir Info Pública e salvar o conteúdo', 'Validar consistência com o PAI', 'Marcar gate PIO no Workflow (Nível 3)']
+  },
+  LNO: {
+    title: 'Ligações (LNO)',
+    why: 'Coordena a integração com outras agências e mantém contatos e acordos operacionais atualizados.',
+    deliver: ['Lista de agências', 'Contatos-chave', 'Acordos e responsabilidades', 'Fluxo de coordenação'],
+    next: ['Abrir Ligações e registrar agências/contatos', 'Registrar acordos operacionais', 'Marcar gate LNO (Nível 3)']
+  },
+
+  SAFE: {
+    title: 'Segurança',
+    why: 'Identifica riscos e define medidas. Valida que o plano é executável com segurança.',
+    deliver: ['Riscos e mitigação', 'Briefing de segurança', 'Monitoramento de condições perigosas'],
+    next: ['Revisar riscos em Planejamento', 'Registrar recomendações', 'Marcar gate de Segurança (quando aplicável)']
+  }
+};
+
+function getLevel(){
+  const inc = Store.get('argos_inc', null);
+  return inc?.level || 'Nível 2';
+}
+function setLevel(level){
+  const inc = Store.get('argos_inc', ARGOS.inc || {});
+  inc.level = level;
+  Store.set('argos_inc', inc);
+  ARGOS.toast('Nível ajustado: ' + level);
+  renderRole();
+}
+
+function sizeHint(level){
+  if(level==='Nível 1') return 'SCI enxuto: CI acumula funções e ativa apenas o essencial.';
+  if(level==='Nível 2') return 'SCI intermediário: Chefias de Operações/Planejamento/Logística já devem estar ativas.';
+  return 'SCI completo: ativa seções, unidades e funções específicas (PIO, Segurança, Liaison, etc.).';
+}
+
+function recommendedRoles(level){
+  if(level==='Nível 1') return ['CI','OPS','PLAN']; // pode acumular
+  if(level==='Nível 2') return ['CI','OPS','PLAN','LOG','SAFE'];
+  return ['CI','OPS','PLAN','LOG','ADM','SAFE','PIO','LNO']; // + PIO/LNO (como extensão)
+}
+
+function setRole(role){
+  Store.set('ui_role', role);
+  renderRole();
+}
+
+function renderRole(){
+  const role = Store.get('ui_role','CI');
+  const po = WF.getPO();
+  const lock = isLocked();
+  const level = getLevel();
+  const gates = po.checklist;
+  const rec = recommendedRoles(level);
+
+  const r = ROLE_TEXT[role] || ROLE_TEXT.CI;
+
+  const gateLine = (key, label) => {
+    const done = !!gates[key]?.done;
+    const badge = done ? 'badge-ok' : 'badge-warn';
+    return `<div style="display:flex; justify-content:space-between; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+      <div><strong>${label}</strong><div class="muted" style="font-size:12px;">${(gates[key]?.note||'')}</div></div>
+      <span class="badge ${badge}">${done ? 'OK' : 'Pendente'}</span>
+    </div>`;
+  };
+
+  const roleFlags = rec.includes(role) ? `<span class="badge badge-ok">Recomendado para ${level}</span>` : `<span class="badge badge-warn">Opcional em ${level}</span>`;
+
+  document.getElementById('roleBox').innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+      <div>
+        <div style="font-size:18px; font-weight:800;">${r.title}</div>
+        <div class="muted" style="font-size:12px; margin-top:2px;">${sizeHint(level)}</div>
+      </div>
+      <div style="text-align:right;">
+        ${roleFlags}
+        <div class="muted" style="font-size:11px; margin-top:6px;">PO: <b>${po.status}</b> • ${lock ? 'Somente leitura' : 'Edição aberta'}</div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px; color:var(--muted); font-size:13px; line-height:1.4;">
+      ${r.why}
+    </div>
+
+    <div style="margin-top:14px; display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+      <div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:#ffffff05;">
+        <div class="stat-label">ENTREGÁVEIS</div>
+        <ul style="margin:10px 0 0 18px; color:var(--text);">
+          ${r.deliver.map(x=>`<li style="margin:6px 0;">${x}</li>`).join('')}
+        </ul>
+      </div>
+      <div style="border:1px solid var(--border); border-radius:12px; padding:12px; background:#ffffff05;">
+        <div class="stat-label">PRÓXIMAS AÇÕES</div>
+        <ul style="margin:10px 0 0 18px; color:var(--text);">
+          ${r.next.map(x=>`<li style="margin:6px 0;">${x}</li>`).join('')}
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top:14px; border:1px solid var(--border); border-radius:12px; padding:12px;">
+      <div class="stat-label">STATUS DOS GATES DO PO</div>
+      ${gateLine('plan','Planejamento')}
+      ${gateLine('ops','Operações')}
+      ${gateLine('log','Logística')}
+      ${gateLine('adm','Adm/Fin')}
+      ${gateLine('pio','Info Pública')}
+      ${gateLine('lno','Ligações')}
+      <div style="padding-top:10px; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn btn-secondary" href="workflow.html"><i data-lucide="git-merge"></i> Abrir Workflow</a>
+        <a class="btn btn-secondary" href="${role==='PLAN'?'planejamento.html':role==='OPS'?'operacoes.html':role==='LOG'?'logistica.html':role==='ADM'?'admfin.html':role==='SAFE'?'seguranca.html':role==='PIO'?'informacao_publica.html':role==='LNO'?'ligacoes.html':'incidente.html'}"><i data-lucide="arrow-right"></i> Ir para área</a>
+      </div>
+    </div>
+
+    ${level==='Nível 3' ? `
+      <div style="margin-top:14px; padding:12px; border:1px dashed var(--border); border-radius:12px; background:#ffffff05;">
+        <div class="stat-label">EXTENSÕES (NÍVEL 3)</div>
+        <div class="muted" style="font-size:13px; margin-top:6px;">
+          Em incidentes complexos, considere ativar também: <b>PIO (Informação Pública)</b>, <b>LNO (Ligações)</b>, <b>Unidades (Situação/Recursos/Documentação)</b> e coordenação interagências.
+        </div>
+      </div>
+    ` : ``}
+  `;
+
+  lucide.createIcons();
+}
+
+document.addEventListener('DOMContentLoaded', renderRole);
+</script>
+</section>
+    </div>
+    <script src="assets/app.js"></script>
+</body>
+</html>

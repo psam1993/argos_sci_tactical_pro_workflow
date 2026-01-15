@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i data-lucide="shield"></i> <span>ARGOS SCI</span></div>
+        <nav class="nav">
+            <a href="index.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
+            <a href="incidente.html"><i data-lucide="file-text"></i> <span>Configuração SCI</span></a>
+            <a href="mapa.html"><i data-lucide="map"></i> <span>Mapa Tático</span></a>
+            <a href="workflow.html"><i data-lucide="git-merge"></i> <span>Workflow PO</span></a>
+            <a href="painel_papel.html"><i data-lucide="user-cog"></i> <span>Painel por Papel</span></a>
+            <a href="planejamento.html"><i data-lucide="clipboard-list"></i> <span>Planejamento</span></a>
+            <a href="operacoes.html"><i data-lucide="swords"></i> <span>Operações</span></a>
+            <a href="logistica.html"><i data-lucide="truck"></i> <span>Logística</span></a>
+            <a href="admfin.html"><i data-lucide="wallet"></i> <span>Adm/Fin</span></a>
+            <a href="seguranca.html"><i data-lucide="hard-hat"></i> <span>Segurança</span></a>
+            <a href="informacao_publica.html"><i data-lucide="megaphone"></i> <span>Info Pública</span></a>
+            <a href="ligacoes.html"><i data-lucide="handshake"></i> <span>Ligações</span></a>
+            <a href="equipes.html"><i data-lucide="users"></i> <span>Recursos</span></a>
+            <a href="relatorios.html"><i data-lucide="printer"></i> <span>Relatórios / PAI</span></a>
+        </nav>
+        <div style="background: #ffffff05; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <div class="badge badge-ok" style="margin-bottom: 5px;">Sistema Online</div>
+            <div style="font-size: 11px; color: var(--muted);">Cuiabá/MT - Relatórios</div>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <span class="muted" style="font-size: 13px;">INCIDENTE ATIVO:</span> 
+                <strong style="letter-spacing: 0.5px;">#SCI-2026-004</strong>
+            </div>
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--warn);">PO-02 EM CURSO</div>
+                    <div class="muted" style="font-size: 10px;">FECHAMENTO: 14 JAN 06:00</div>
+                </div>
+                <div style="width:38px; height:38px; background:var(--brand); border-radius:10px; display:grid; place-items:center; font-weight:bold; color:#000; cursor:pointer;">RS</div>
+            </div>
+        </header>
+        <section class="content">
+<div class="card">
+    <h2><i data-lucide="printer"></i> Plano de Ação do Incidente (PAI)</h2>
+    <p class="muted">Compilação dos dados registrados para o Período Operacional atual (PO-02).</p>
+
+    <div class="grid cols-3" style="margin-top:25px;">
+        <div class="card" style="text-align:center; cursor:pointer; hover:transform scale(1.02)" onclick="ARGOS.toast('Gerando PDF SCI-202...')">
+            <i data-lucide="file-text" style="width:35px; height:35px; color:var(--brand); margin-bottom:12px;"></i>
+            <h4>SCI 202</h4>
+            <div class="muted" style="font-size:11px;">Objetivos do Incidente</div>
+        </div>
+        <div class="card" style="text-align:center; cursor:pointer;" onclick="ARGOS.toast('Gerando PDF SCI-204...')">
+            <i data-lucide="users" style="width:35px; height:35px; color:var(--brand); margin-bottom:12px;"></i>
+            <h4>SCI 204</h4>
+            <div class="muted" style="font-size:11px;">Atribuições e Divisões</div>
+        </div>
+        <div class="card" style="text-align:center; background:var(--brand); color:#000; cursor:pointer;" onclick="ARGOS.toast('Compilando PAI completo...')">
+            <i data-lucide="package" style="width:35px; height:35px; margin-bottom:12px;"></i>
+            <h4 style="margin:0">Gerar PAI Completo</h4>
+            <div style="font-size:10px; font-weight:800; text-transform:uppercase;">PO-02 Atualizado</div>
+        </div>
+    </div>
+
+    <div style="margin-top:40px;">
+        <h3>Histórico de Documentação</h3>
+        <table class="table">
+            <thead>
+                <tr><th>Documento</th><th>PO</th><th>Versão</th><th>Data de Geração</th><th>Ação</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>PAI_CONSOLIDADO_PO01.pdf</td>
+                    <td>PO-01</td>
+                    <td>v1.2 (Final)</td>
+                    <td>13/01 06:15</td>
+                    <td><button class="btn btn-secondary btn-sm">Download</button></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</section>
+    </div>
+    <script src="assets/app.js"></script>
+</body>
+</html>

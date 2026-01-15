@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configuração SCI | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i data-lucide="shield"></i> <span>ARGOS SCI</span></div>
+        <nav class="nav">
+            <a href="index.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
+            <a href="incidente.html"><i data-lucide="file-text"></i> <span>Configuração SCI</span></a>
+            <a href="mapa.html"><i data-lucide="map"></i> <span>Mapa Tático</span></a>
+            <a href="workflow.html"><i data-lucide="git-merge"></i> <span>Workflow PO</span></a>
+            <a href="painel_papel.html"><i data-lucide="user-cog"></i> <span>Painel por Papel</span></a>
+            <a href="planejamento.html"><i data-lucide="clipboard-list"></i> <span>Planejamento</span></a>
+            <a href="operacoes.html"><i data-lucide="swords"></i> <span>Operações</span></a>
+            <a href="logistica.html"><i data-lucide="truck"></i> <span>Logística</span></a>
+            <a href="admfin.html"><i data-lucide="wallet"></i> <span>Adm/Fin</span></a>
+            <a href="seguranca.html"><i data-lucide="hard-hat"></i> <span>Segurança</span></a>
+            <a href="informacao_publica.html"><i data-lucide="megaphone"></i> <span>Info Pública</span></a>
+            <a href="ligacoes.html"><i data-lucide="handshake"></i> <span>Ligações</span></a>
+            <a href="equipes.html"><i data-lucide="users"></i> <span>Recursos</span></a>
+            <a href="relatorios.html"><i data-lucide="printer"></i> <span>Relatórios / PAI</span></a>
+        </nav>
+        <div style="background: #ffffff05; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <div class="badge badge-ok" style="margin-bottom: 5px;">Sistema Online</div>
+            <div style="font-size: 11px; color: var(--muted);">Cuiabá/MT - Configuração SCI</div>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <span class="muted" style="font-size: 13px;">INCIDENTE ATIVO:</span> 
+                <strong style="letter-spacing: 0.5px;">#SCI-2026-004</strong>
+            </div>
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--warn);">PO-02 EM CURSO</div>
+                    <div class="muted" style="font-size: 10px;">FECHAMENTO: 14 JAN 06:00</div>
+                </div>
+                <div style="width:38px; height:38px; background:var(--brand); border-radius:10px; display:grid; place-items:center; font-weight:bold; color:#000; cursor:pointer;">RS</div>
+            </div>
+        </header>
+        <section class="content">
+<div class="grid cols-2">
+    <div class="card">
+        <h2><i data-lucide="settings"></i> Parâmetros do Incidente (SCI 201)</h2>
+        <form class="grid">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
+                <div class="form-group">
+                    <label>ID do Incidente</label>
+                    <input type="text" value="SCI-2026-004" readonly style="opacity:0.6">
+                </div>
+                <div class="form-group">
+                    <label>Complexidade</label>
+                    <select>
+                        <option>Nível 1</option>
+                        <option selected>Nível 2</option>
+                        <option>Nível 3</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Nome da Operação</label>
+                <input type="text" value="Incêndio Florestal - Serra das Araras">
+            </div>
+            <div class="form-group">
+                <label>Comandante do Incidente (CI)</label>
+                <input type="text" value="Cap. Wihby">
+            </div>
+            <div class="form-group">
+                <label>Objetivos de Comando</label>
+                <textarea rows="5">1. Priorizar a segurança da vida e das equipes terrestres;\n2. Proteger as torres de transmissão localizadas ao norte;\n3. Minimizar danos ambientais na área de preservação permanente.</textarea>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button type="button" class="btn btn-primary" onclick="if(isLocked()){ARGOS.toast('PO bloqueado: ajuste no próximo PO.'); return;} Store.set('argos_inc', {id:'SCI-2026-004', name: document.querySelector('input[value="Incêndio Florestal - Serra Central"]')?.value || 'Incêndio', status:'Ativo', level: document.querySelector('select')?.value || 'Nível 2', ci: document.querySelector('input[value="Maj. Rodrigo Silva"]')?.value || 'CI', po:'PO-02', start:'13 Jan 2026, 08:30'}); ARGOS.toast('Incidente atualizado!');">Salvar Configurações</button>
+                <button type="button" class="btn btn-secondary">Exportar SCI 201</button>
+            </div>
+        </form>
+    </div>
+    <div class="card">
+        <h2><i data-lucide="git-branch"></i> Organograma de Comando</h2>
+        <p class="muted" style="font-size:13px; margin-bottom:20px;">Definição das responsabilidades por seção conforme o manual SCI.</p>
+
+        <div style="display:flex; flex-direction:column; gap:15px; padding-left:20px;">
+            <div style="border: 2px solid var(--brand); padding:15px; border-radius:10px; text-align:center; background:#10b98110">
+                <div class="muted" style="font-size:11px; font-weight:700;">CI - COMANDANTE</div>
+                <strong style="color:var(--brand)">Cap. Wihby</strong>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="card" style="padding:15px; background:#ffffff05; border-style:dashed;">
+                    <div class="muted" style="font-size:11px;">OPERAÇÕES</div>
+                    <div style="font-size:13px; font-weight:600;">Cap. Menezes</div>
+                </div>
+                <div class="card" style="padding:15px; background:#ffffff05; border-style:dashed;">
+                    <div class="muted" style="font-size:11px;">PLANEJAMENTO</div>
+                    <div style="font-size:13px; font-weight:600;">Ten. Alencar</div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="card" style="padding:15px; background:#ffffff05; border-style:dashed;">
+                    <div class="muted" style="font-size:11px;">LOGÍSTICA</div>
+                    <div style="font-size:13px; font-weight:600;">Sgt. Porto</div>
+                </div>
+                <div class="card" style="padding:15px; background:#ffffff05; border-style:dashed;">
+                    <div class="muted" style="font-size:11px;">ADM / FINANÇAS</div>
+                    <div style="font-size:13px; font-weight:600;">Cap. Souza</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:30px; text-align:center;">
+             <button class="btn btn-secondary" style="width:100%"><i data-lucide="edit"></i> Alterar Organograma</button>
+        </div>
+    </div>
+</div>
+</section>
+    </div>
+    <script src="assets/app.js"></script>
+</body>
+</html>

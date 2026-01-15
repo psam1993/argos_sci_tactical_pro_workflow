@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa Tático | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i data-lucide="shield"></i> <span>ARGOS SCI</span></div>
+        <nav class="nav">
+            <a href="index.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
+            <a href="incidente.html"><i data-lucide="file-text"></i> <span>Configuração SCI</span></a>
+            <a href="mapa.html"><i data-lucide="map"></i> <span>Mapa Tático</span></a>
+            <a href="workflow.html"><i data-lucide="git-merge"></i> <span>Workflow PO</span></a>
+            <a href="painel_papel.html"><i data-lucide="user-cog"></i> <span>Painel por Papel</span></a>
+            <a href="planejamento.html"><i data-lucide="clipboard-list"></i> <span>Planejamento</span></a>
+            <a href="operacoes.html"><i data-lucide="swords"></i> <span>Operações</span></a>
+            <a href="logistica.html"><i data-lucide="truck"></i> <span>Logística</span></a>
+            <a href="admfin.html"><i data-lucide="wallet"></i> <span>Adm/Fin</span></a>
+            <a href="seguranca.html"><i data-lucide="hard-hat"></i> <span>Segurança</span></a>
+            <a href="informacao_publica.html"><i data-lucide="megaphone"></i> <span>Info Pública</span></a>
+            <a href="ligacoes.html"><i data-lucide="handshake"></i> <span>Ligações</span></a>
+            <a href="equipes.html"><i data-lucide="users"></i> <span>Recursos</span></a>
+            <a href="relatorios.html"><i data-lucide="printer"></i> <span>Relatórios / PAI</span></a>
+        </nav>
+        <div style="background: #ffffff05; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <div class="badge badge-ok" style="margin-bottom: 5px;">Sistema Online</div>
+            <div style="font-size: 11px; color: var(--muted);">Cuiabá/MT - Mapa Tático</div>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <span class="muted" style="font-size: 13px;">INCIDENTE ATIVO:</span> 
+                <strong style="letter-spacing: 0.5px;">#SCI-2026-004</strong>
+            </div>
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--warn);">PO-02 EM CURSO</div>
+                    <div class="muted" style="font-size: 10px;">FECHAMENTO: 14 JAN 06:00</div>
+                </div>
+                <div style="width:38px; height:38px; background:var(--brand); border-radius:10px; display:grid; place-items:center; font-weight:bold; color:#000; cursor:pointer;">RS</div>
+            </div>
+        </header>
+        <section class="content">
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2><i data-lucide="map-pin"></i> Consciência Situacional</h2>
+        <div style="display:flex; gap:10px;">
+            <select style="width:auto; margin:0; padding:8px;">
+                <option>Visão Satélite</option>
+                <option>Visão Relevo (Topo)</option>
+                <option>Mapa Base</option>
+            </select>
+            <button class="btn btn-primary" onclick="ARGOS.toast('Ferramenta de marcação ativa')"><i data-lucide="plus"></i> Adicionar Ponto</button>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <div style="margin-top:20px; display:flex; gap:25px; flex-wrap:wrap; background: #00000020; padding:15px; border-radius:10px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="width:15px; height:15px; background:var(--danger); border-radius:3px;"></span> 
+            <span style="font-size:13px; font-weight:600;">Foco Ativo</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="width:15px; height:15px; background:var(--brand); border-radius:3px;"></span> 
+            <span style="font-size:13px; font-weight:600;">Recurso Ativo</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="width:15px; height:3px; background:var(--warn); border-radius:1px;"></span> 
+            <span style="font-size:13px; font-weight:600;">Linha de Aceiro</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="width:15px; height:15px; border:2px solid var(--accent); border-radius:3px;"></span> 
+            <span style="font-size:13px; font-weight:600;">PC / Posto de Comando</span>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const map = L.map('map').setView([-15.603, -56.096], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+
+        // Área de Incêndio (Círculo)
+        L.circle([-15.604, -56.095], {
+            color: 'red',
+            fillColor: '#f03',
+            fillOpacity: 0.35,
+            radius: 400
+        }).addTo(map).bindPopup("Área de Incêndio Crítica");
+
+        // Equipe em campo
+        const teamIcon = L.divIcon({
+            html: '<div style="background:var(--brand); width:12px; height:12px; border-radius:50%; border:2px solid #fff;"></div>',
+            className: ''
+        });
+        L.marker([-15.599, -56.101], {icon: teamIcon}).addTo(map).bindPopup("<b>Equipe GUA-01</b><br>Missão: Aceiro");
+
+        // Posto de Comando
+        L.marker([-15.610, -56.090]).addTo(map).bindPopup("<b>POSTO DE COMANDO (PC)</b>");
+    });
+</script>
+</section>
+    </div>
+    <script src="assets/app.js"></script>
+</body>
+</html>

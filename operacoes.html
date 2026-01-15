@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operações | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i data-lucide="shield"></i> <span>ARGOS SCI</span></div>
+        <nav class="nav">
+            <a href="index.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
+            <a href="incidente.html"><i data-lucide="file-text"></i> <span>Configuração SCI</span></a>
+            <a href="mapa.html"><i data-lucide="map"></i> <span>Mapa Tático</span></a>
+            <a href="workflow.html"><i data-lucide="git-merge"></i> <span>Workflow PO</span></a>
+            <a href="painel_papel.html"><i data-lucide="user-cog"></i> <span>Painel por Papel</span></a>
+            <a href="planejamento.html"><i data-lucide="clipboard-list"></i> <span>Planejamento</span></a>
+            <a href="operacoes.html"><i data-lucide="swords"></i> <span>Operações</span></a>
+            <a href="logistica.html"><i data-lucide="truck"></i> <span>Logística</span></a>
+            <a href="admfin.html"><i data-lucide="wallet"></i> <span>Adm/Fin</span></a>
+            <a href="seguranca.html"><i data-lucide="hard-hat"></i> <span>Segurança</span></a>
+            <a href="informacao_publica.html"><i data-lucide="megaphone"></i> <span>Info Pública</span></a>
+            <a href="ligacoes.html"><i data-lucide="handshake"></i> <span>Ligações</span></a>
+            <a href="equipes.html"><i data-lucide="users"></i> <span>Recursos</span></a>
+            <a href="relatorios.html"><i data-lucide="printer"></i> <span>Relatórios / PAI</span></a>
+        </nav>
+        <div style="background: #ffffff05; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <div class="badge badge-ok" style="margin-bottom: 5px;">Sistema Online</div>
+            <div style="font-size: 11px; color: var(--muted);">Cuiabá/MT - Operações</div>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <span class="muted" style="font-size: 13px;">INCIDENTE ATIVO:</span> 
+                <strong style="letter-spacing: 0.5px;">#SCI-2026-004</strong>
+            </div>
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--warn);">PO-02 EM CURSO</div>
+                    <div class="muted" style="font-size: 10px;">FECHAMENTO: 14 JAN 06:00</div>
+                </div>
+                <div style="width:38px; height:38px; background:var(--brand); border-radius:10px; display:grid; place-items:center; font-weight:bold; color:#000; cursor:pointer;">RS</div>
+            </div>
+        </header>
+        <section class="content">
+<div class="grid cols-2">
+  <div class="card">
+    <h2><i data-lucide="swords"></i> Operações (Missões do PO)</h2>
+    <p class="muted">Defina missões, setor e status. Ao salvar, marca o gate de Operações no Workflow.</p>
+
+    <div style="display:grid; gap:12px;">
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div>
+          <label>ID da Missão</label>
+          <input id="op_id" placeholder="Ex.: M26"/>
+        </div>
+        <div>
+          <label>Status</label>
+          <select id="op_status">
+            <option>Pendente</option>
+            <option>Em curso</option>
+            <option>Concluído</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label>Descrição</label>
+        <input id="op_title" placeholder="Ex.: Aceiro flanco oeste / proteção de estruturas"/>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+        <div>
+          <label>Setor/Divisão</label>
+          <input id="op_sector" placeholder="Ex.: Setor Norte"/>
+        </div>
+        <div>
+          <label>Recurso(s) designado(s)</label>
+          <input id="op_res" placeholder="Ex.: GUA-01, GUA-05"/>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" onclick="addMission()"><i data-lucide="plus"></i> Adicionar/Atualizar Missão</button>
+        <a class="btn btn-secondary" href="workflow.html"><i data-lucide="git-merge"></i> Ver Workflow</a>
+      </div>
+      <div id="op_lock" class="badge badge-danger" style="display:none; width:fit-content;">PO BLOQUEADO (Somente leitura)</div>
+    </div>
+
+    <h3 style="margin-top:18px;">Missões registradas</h3>
+    <table class="table" id="op_tbl"></table>
+  </div>
+
+  <div class="card">
+    <h2><i data-lucide="map"></i> Atalho para Consciência Situacional</h2>
+    <p class="muted">Use o mapa tático para registrar perímetro e pontos críticos. Missões devem refletir o cenário real.</p>
+    <a class="btn btn-secondary" href="mapa.html" style="width:100%; justify-content:center;"><i data-lucide="map-pin"></i> Abrir Mapa Tático</a>
+
+    <div style="margin-top:16px; border:1px dashed var(--border); border-radius:12px; padding:12px; background:#ffffff05;">
+      <div class="stat-label">BOA PRÁTICA</div>
+      <div class="muted" style="font-size:13px; margin-top:6px; line-height:1.4;">
+        Sempre que houver mudança relevante (novo setor, nova missão, troca de recurso), gere uma <b>versão</b> do PAI no Workflow.
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function missions(){ return Store.get('argos_missions', []); }
+function saveMissions(list){ Store.set('argos_missions', list); }
+
+function render(){
+  const list = missions();
+  document.getElementById('op_tbl').innerHTML = `
+    <thead><tr><th>ID</th><th>Descrição</th><th>Setor</th><th>Recursos</th><th>Status</th><th>Ação</th></tr></thead>
+    <tbody>
+      ${list.length ? list.map(m=>`
+        <tr>
+          <td><strong>${m.id}</strong></td>
+          <td>${m.title}</td>
+          <td>${m.sector||''}</td>
+          <td>${m.resources||''}</td>
+          <td>${m.status}</td>
+          <td><button class="btn btn-secondary" style="padding:8px 10px; font-size:12px;" onclick="edit('${m.id}')">Editar</button></td>
+        </tr>
+      `).join('') : `<tr><td colspan="6" class="muted">Nenhuma missão registrada</td></tr>`}
+    </tbody>
+  `;
+}
+
+function addMission(){
+  if(isLocked()){ ARGOS.toast('PO bloqueado.'); return; }
+  const id = op_id.value.trim() || ('M' + Math.floor(Math.random()*90+10));
+  const m = {
+    id,
+    title: op_title.value.trim(),
+    sector: op_sector.value.trim(),
+    resources: op_res.value.trim(),
+    status: op_status.value,
+    updated_at: new Date().toISOString()
+  };
+  let list = missions();
+  const idx = list.findIndex(x=>x.id===id);
+  if(idx>=0) list[idx]=m; else list.unshift(m);
+  saveMissions(list);
+
+  markProgress('ops', list.length>0);
+  WF.bumpVersion('Operações atualizadas (missões)');
+  ARGOS.toast('Missão salva e gate marcado.');
+  render();
+}
+
+function edit(id){
+  const m = missions().find(x=>x.id===id);
+  if(!m) return;
+  op_id.value = m.id;
+  op_title.value = m.title||'';
+  op_sector.value = m.sector||'';
+  op_res.value = m.resources||'';
+  op_status.value = m.status||'Pendente';
+}
+
+function applyLock(){
+  if(isLocked()){
+    document.querySelectorAll('input, select, button.btn-primary').forEach(el=>el.disabled=true);
+    document.getElementById('op_lock').style.display='inline-block';
+    ARGOS.toast('PO bloqueado: somente leitura.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{ render(); applyLock(); });
+</script>
+</section>
+    </div>
+    <script src="assets/app.js"></script>
+</body>
+</html>

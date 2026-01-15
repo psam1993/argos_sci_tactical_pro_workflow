@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i data-lucide="shield"></i> <span>ARGOS SCI</span></div>
+        <nav class="nav">
+            <a href="index.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
+            <a href="incidente.html"><i data-lucide="file-text"></i> <span>Configuração SCI</span></a>
+            <a href="mapa.html"><i data-lucide="map"></i> <span>Mapa Tático</span></a>
+            <a href="workflow.html"><i data-lucide="git-merge"></i> <span>Workflow PO</span></a>
+            <a href="painel_papel.html"><i data-lucide="user-cog"></i> <span>Painel por Papel</span></a>
+            <a href="planejamento.html"><i data-lucide="clipboard-list"></i> <span>Planejamento</span></a>
+            <a href="operacoes.html"><i data-lucide="swords"></i> <span>Operações</span></a>
+            <a href="logistica.html"><i data-lucide="truck"></i> <span>Logística</span></a>
+            <a href="admfin.html"><i data-lucide="wallet"></i> <span>Adm/Fin</span></a>
+            <a href="seguranca.html"><i data-lucide="hard-hat"></i> <span>Segurança</span></a>
+            <a href="informacao_publica.html"><i data-lucide="megaphone"></i> <span>Info Pública</span></a>
+            <a href="ligacoes.html"><i data-lucide="handshake"></i> <span>Ligações</span></a>
+            <a href="equipes.html"><i data-lucide="users"></i> <span>Recursos</span></a>
+            <a href="relatorios.html"><i data-lucide="printer"></i> <span>Relatórios / PAI</span></a>
+        </nav>
+        <div style="background: #ffffff05; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <div class="badge badge-ok" style="margin-bottom: 5px;">Sistema Online</div>
+            <div style="font-size: 11px; color: var(--muted);">Cuiabá/MT - Dashboard</div>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <span class="muted" style="font-size: 13px;">INCIDENTE ATIVO:</span> 
+                <strong style="letter-spacing: 0.5px;">#SCI-2026-004</strong>
+            </div>
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--warn);">PO-02 EM CURSO</div>
+                    <div class="muted" style="font-size: 10px;">FECHAMENTO: 14 JAN 06:00</div>
+                </div>
+                <div style="width:38px; height:38px; background:var(--brand); border-radius:10px; display:grid; place-items:center; font-weight:bold; color:#000; cursor:pointer;">RS</div>
+            </div>
+        </header>
+        <section class="content">
+<div class="grid cols-3">
+    <div class="card">
+        <span class="stat-label">STATUS DO SCI</span>
+        <div class="stat-val" style="color:var(--brand)">Ativado</div>
+        <div class="badge badge-ok" style="margin-top:8px">Em Conformidade</div>
+    </div>
+    <div class="card">
+        <span class="stat-label">EFETIVO TOTAL</span>
+        <div class="stat-val">42 Militares</div>
+        <div class="muted" style="font-size:12px; margin-top:5px;">8 Viaturas terrestres | 1 Aeronave</div>
+    </div>
+    <div class="card">
+        <span class="stat-label">RISCO METEOROLÓGICO</span>
+        <div class="stat-val" style="color:var(--warn)">Crítico</div>
+        <div class="muted" style="font-size:12px; margin-top:5px;">Vento 22km/h SE | Umidade 18%</div>
+    </div>
+</div>
+
+<div class="grid cols-2">
+    <div class="card">
+        <h2><i data-lucide="activity"></i> Missões de Campo</h2>
+        <table class="table">
+            <thead>
+                <tr><th>ID</th><th>Equipe</th><th>Atribuição</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>#M21</td>
+                    <td><strong>GUA-01</strong></td>
+                    <td>Aceiro no Flanco Norte</td>
+                    <td><span class="badge badge-warn">Em curso</span></td>
+                </tr>
+                <tr>
+                    <td>#M22</td>
+                    <td><strong>GUA-05</strong></td>
+                    <td>Proteção de Estrutura</td>
+                    <td><span class="badge badge-ok">Concluído</span></td>
+                </tr>
+                <tr>
+                    <td>#M25</td>
+                    <td><strong>AER-01</strong></td>
+                    <td>Lançamento de Água (Setor 3)</td>
+                    <td><span class="badge badge-warn">Pendente</span></td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="margin-top:20px;">
+            <a href="equipes.html" class="btn btn-secondary" style="width:100%">Ver Todas as Missões</a>
+        </div>
+    </div>
+    <div class="card">
+        <h2><i data-lucide="clock"></i> Linha do Tempo</h2>
+        <div class="timeline">
+            <div class="timeline-item">
+                <span class="timeline-time">HOJE, 12:45</span>
+                Chefia de Operações solicitou suporte logístico para alimentação (Setor Norte).
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-time">HOJE, 10:20</span>
+                Início do PO-02 conforme plano de ação aprovado pelo CI.
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-time">HOJE, 08:30</span>
+                Briefing matinal realizado com o Staff de Comando.
+            </div>
+            <div class="timeline-item">
+                <span class="timeline-time">ONTEM, 22:15</span>
+                Contenção de 40% do perímetro do flanco leste.
+            </div>
+        </div>
+    </div>
+</div>
+</section>
+    </div>
+    <script src="assets/app.js"></script>
+</body>
+</html>

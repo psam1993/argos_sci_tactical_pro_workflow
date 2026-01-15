@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logística | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="brand"><i data-lucide="shield"></i> <span>ARGOS SCI</span></div>
+        <nav class="nav">
+            <a href="index.html"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></a>
+            <a href="incidente.html"><i data-lucide="file-text"></i> <span>Configuração SCI</span></a>
+            <a href="mapa.html"><i data-lucide="map"></i> <span>Mapa Tático</span></a>
+            <a href="workflow.html"><i data-lucide="git-merge"></i> <span>Workflow PO</span></a>
+            <a href="painel_papel.html"><i data-lucide="user-cog"></i> <span>Painel por Papel</span></a>
+            <a href="planejamento.html"><i data-lucide="clipboard-list"></i> <span>Planejamento</span></a>
+            <a href="operacoes.html"><i data-lucide="swords"></i> <span>Operações</span></a>
+            <a href="logistica.html"><i data-lucide="truck"></i> <span>Logística</span></a>
+            <a href="admfin.html"><i data-lucide="wallet"></i> <span>Adm/Fin</span></a>
+            <a href="seguranca.html"><i data-lucide="hard-hat"></i> <span>Segurança</span></a>
+            <a href="informacao_publica.html"><i data-lucide="megaphone"></i> <span>Info Pública</span></a>
+            <a href="ligacoes.html"><i data-lucide="handshake"></i> <span>Ligações</span></a>
+            <a href="equipes.html"><i data-lucide="users"></i> <span>Recursos</span></a>
+            <a href="relatorios.html"><i data-lucide="printer"></i> <span>Relatórios / PAI</span></a>
+        </nav>
+        <div style="background: #ffffff05; padding: 15px; border-radius: 10px; margin-top: 20px;">
+            <div class="badge badge-ok" style="margin-bottom: 5px;">Sistema Online</div>
+            <div style="font-size: 11px; color: var(--muted);">Cuiabá/MT - Logística</div>
+        </div>
+    </aside>
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <span class="muted" style="font-size: 13px;">INCIDENTE ATIVO:</span> 
+                <strong style="letter-spacing: 0.5px;">#SCI-2026-004</strong>
+            </div>
+            <div style="display:flex; gap: 20px; align-items:center;">
+                <div style="text-align: right; line-height: 1.2;">
+                    <div style="font-size: 12px; font-weight: 700; color: var(--warn);">PO-02 EM CURSO</div>
+                    <div class="muted" style="font-size: 10px;">FECHAMENTO: 14 JAN 06:00</div>
+                </div>
+                <div style="width:38px; height:38px; background:var(--brand); border-radius:10px; display:grid; place-items:center; font-weight:bold; color:#000; cursor:pointer;">RS</div>
+            </div>
+        </header>
+        <section class="content">
+<div class="grid cols-2">
+  <div class="card">
+    <h2><i data-lucide="truck"></i> Logística (Apoio do PO)</h2>
+    <p class="muted">Registre necessidades, comunicações, alimentação, combustível e pendências. Ao salvar, marca o gate de Logística.</p>
+
+    <div style="display:grid; gap:12px;">
+      <div>
+        <label>Necessidades Prioritárias</label>
+        <textarea id="lg_need" rows="4" placeholder="Ex.: alimentação Setor Norte, água, EPI, ferramentas..."></textarea>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label>Plano de Comunicação (resumo)</label>
+          <textarea id="lg_comms" rows="4" placeholder="Frequências, canais, contato..."></textarea>
+        </div>
+        <div>
+          <label>Transporte / Combustível</label>
+          <textarea id="lg_trans" rows="4" placeholder="Rotas, viaturas, reabastecimento..."></textarea>
+        </div>
+      </div>
+      <div>
+        <label>Pendências</label>
+        <textarea id="lg_pend" rows="3" placeholder="Ex.: manutenção AER-01, reposição mangueiras..."></textarea>
+      </div>
+
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" onclick="saveLog()"><i data-lucide="save"></i> Salvar Logística</button>
+        <a class="btn btn-secondary" href="workflow.html"><i data-lucide="git-merge"></i> Ver Workflow</a>
+      </div>
+      <div id="lg_lock" class="badge badge-danger" style="display:none; width:fit-content;">PO BLOQUEADO (Somente leitura)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><i data-lucide="users"></i> Integração com Recursos</h2>
+    <p class="muted">Use a tela de Recursos para manter status e localização. A logística depende disso.</p>
+    <a class="btn btn-secondary" href="equipes.html" style="width:100%; justify-content:center;"><i data-lucide="users"></i> Abrir Recursos</a>
+
+    <div style="margin-top:16px; border:1px dashed var(--border); border-radius:12px; padding:12px; background:#ffffff05;">
+      <div class="stat-label">GATE MÍNIMO</div>
+      <div class="muted" style="font-size:13px; margin-top:6px; line-height:1.4;">
+        Para enviar o PO à revisão, o gate de <b>Logística</b> deve estar OK (mesmo em nível 1/2).
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function load(){
+  const d = Store.get('log_form', {});
+  lg_need.value = d.need || '';
+  lg_comms.value = d.comms || '';
+  lg_trans.value = d.trans || '';
+  lg_pend.value = d.pend || '';
+}
+
+function saveLog(){
+  if(isLocked()){ ARGOS.toast('PO bloqueado.'); return; }
+  const payload = {
+    need: lg_need.value.trim(),
+    comms: lg_comms.value.trim(),
+    trans: lg_trans.value.trim(),
+    pend: lg_pend.value.trim(),
+    updated_at: new Date().toISOString()
+  };
+  Store.set('log_form', payload);
+  markProgress('log', true);
+  WF.bumpVersion('Logística atualizada');
+  ARGOS.toast('Logística salva e gate marcado.');
+}
+
+function applyLock(){
+  if(isLocked()){
+    document.querySelectorAll('textarea, button.btn-primary').forEach(el=>el.disabled=true);
+    document.getElementById('lg_lock').style.display='inline-block';
+    ARGOS.toast('PO bloqueado: somente leitura.');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{ load(); applyLock(); });
+</script>
+</section>
+    </div>
+    <script src="assets/app.js"></script>
+</body>
+</html>
