@@ -1,11 +1,50 @@
 
 const ARGOS = {
     init() {
+        this.checkAuth();
         this.loadState();
         this.setActiveNav();
+        this.loadUserInfo();
         lucide.createIcons();
     },
-    loadState() {
+    async checkAuth() {
+        if (typeof SupabaseDB === 'undefined' || typeof window.location === 'undefined') return;
+
+        const currentPage = window.location.pathname.split('/').pop();
+        if (currentPage === 'login.html') return;
+
+        try {
+            const user = SupabaseDB.auth.getCurrentUser();
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+        } catch (error) {
+            console.error('Erro ao verificar autenticação:', error);
+        }
+    },
+    async loadState() {
+        if (typeof SupabaseDB !== 'undefined') {
+            try {
+                const incidente = await SupabaseDB.incidentes.getAtivo();
+                if (incidente) {
+                    this.inc = {
+                        id: incidente.codigo,
+                        name: incidente.nome,
+                        status: incidente.status,
+                        level: incidente.nivel_complexidade,
+                        ci: incidente.comandante_nome,
+                        po: 'PO-02',
+                        start: new Date(incidente.data_inicio).toLocaleString('pt-BR')
+                    };
+                    Store.set('argos_inc', this.inc);
+                    return;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar incidente:', error);
+            }
+        }
+
         this.inc = JSON.parse(localStorage.getItem('argos_inc')) || {
             id: 'SCI-2026-004',
             name: 'Incêndio Florestal - Serra Central',
@@ -21,6 +60,72 @@ const ARGOS = {
         document.querySelectorAll('.nav a').forEach(a => {
             if(a.getAttribute('href') === path) a.classList.add('active');
         });
+    },
+    loadUserInfo() {
+        if (typeof SupabaseDB === 'undefined') return;
+
+        const profile = SupabaseDB.auth.getUserProfile();
+        if (profile) {
+            const initials = profile.nome_completo
+                .split(' ')
+                .map(n => n[0])
+                .slice(0, 2)
+                .join('')
+                .toUpperCase();
+
+            const userBadge = document.querySelector('.topbar [style*="width:38px"]');
+            if (userBadge) {
+                userBadge.textContent = initials;
+                userBadge.title = `${profile.nome_completo} (${profile.papel_sci})`;
+                userBadge.style.cursor = 'pointer';
+                userBadge.onclick = () => this.showUserMenu();
+            }
+        }
+    },
+    showUserMenu() {
+        const profile = SupabaseDB.auth.getUserProfile();
+        if (!profile) return;
+
+        const menu = `
+            <div style="position:fixed; top:70px; right:30px; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; z-index:1000; min-width:250px; box-shadow:0 10px 30px rgba(0,0,0,0.5);">
+                <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid var(--border);">
+                    <div style="font-weight:700; margin-bottom:4px;">${profile.nome_completo}</div>
+                    <div style="font-size:12px; color:var(--muted);">${profile.papel_sci}</div>
+                </div>
+                <button onclick="ARGOS.logout()" class="btn btn-danger" style="width:100%; padding:8px; font-size:13px;">
+                    <i data-lucide="log-out" style="width:16px; height:16px;"></i> Sair
+                </button>
+            </div>
+        `;
+
+        const existing = document.getElementById('user-menu');
+        if (existing) {
+            existing.remove();
+        } else {
+            const div = document.createElement('div');
+            div.id = 'user-menu';
+            div.innerHTML = menu;
+            document.body.appendChild(div);
+
+            lucide.createIcons();
+
+            setTimeout(() => {
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('#user-menu') && !e.target.closest('[style*="width:38px"]')) {
+                        document.getElementById('user-menu')?.remove();
+                    }
+                }, { once: true });
+            }, 100);
+        }
+    },
+    async logout() {
+        try {
+            await SupabaseDB.auth.signOut();
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error('Erro ao fazer logout:', error);
+            this.toast('Erro ao sair do sistema');
+        }
     },
     toast(msg) {
         const t = document.createElement('div');

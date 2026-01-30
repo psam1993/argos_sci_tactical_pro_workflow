@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | ARGOS SCI</title>
+    <link rel="stylesheet" href="assets/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+        .login-container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+        .login-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        .brand-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        .brand-icon {
+            width: 50px;
+            height: 50px;
+            background: var(--brand);
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            color: #000;
+        }
+        .brand-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--brand);
+        }
+        .login-subtitle {
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--text);
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--brand);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: var(--brand);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 10px;
+        }
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+        }
+        .btn-login:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            color: var(--muted);
+            font-size: 13px;
+            position: relative;
+        }
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: var(--border);
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        .toggle-form {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .toggle-form a {
+            color: var(--brand);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .toggle-form a:hover {
+            text-decoration: underline;
+        }
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: none;
+        }
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--brand);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="brand-header">
+                <div class="brand-icon">
+                    <i data-lucide="shield" style="width:30px; height:30px;"></i>
+                </div>
+                <div class="brand-title">ARGOS SCI</div>
+            </div>
+            <div class="login-subtitle">Sistema de Comando de Incidentes</div>
+
+            <div id="alert" class="alert"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" required placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="password" required placeholder="Digite sua senha">
+                </div>
+                <button type="submit" class="btn-login" id="btnLogin">
+                    Entrar no Sistema
+                </button>
+            </form>
+
+            <div class="divider">ou</div>
+
+            <form id="registerForm" style="display:none;">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" id="nomeCompleto" required placeholder="Seu nome completo">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="emailRegister" required placeholder="seu@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="passwordRegister" required placeholder="Mínimo 6 caracteres">
+                </div>
+                <div class="form-group">
+                    <label>Papel no SCI</label>
+                    <select id="papelSci" required>
+                        <option value="">Selecione...</option>
+                        <option value="CI">Comandante do Incidente (CI)</option>
+                        <option value="Operações">Chefia de Operações</option>
+                        <option value="Planejamento">Chefia de Planejamento</option>
+                        <option value="Logística">Chefia de Logística</option>
+                        <option value="Adm/Fin">Chefia de Adm/Finanças</option>
+                        <option value="Segurança">Oficial de Segurança</option>
+                        <option value="PIO">Oficial de Informação Pública</option>
+                        <option value="LNO">Oficial de Ligações</option>
+                        <option value="Equipe">Membro de Equipe</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-login" id="btnRegister">
+                    Criar Conta
+                </button>
+            </form>
+
+            <div class="toggle-form">
+                <span id="toggleText">Não tem conta?</span>
+                <a id="toggleLink">Registre-se aqui</a>
+            </div>
+        </div>
+
+        <div style="text-align:center; margin-top:20px; color:var(--muted); font-size:12px;">
+            ARGOS SCI Tactical Pro v2.1 | Supabase Backend
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+        const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let isLoginMode = true;
+
+        // Verificar se já está autenticado
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Toggle entre login e registro
+        document.getElementById('toggleLink').addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            document.getElementById('loginForm').style.display = isLoginMode ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = isLoginMode ? 'none' : 'block';
+            document.getElementById('toggleText').textContent = isLoginMode ? 'Não tem conta?' : 'Já tem conta?';
+            document.getElementById('toggleLink').textContent = isLoginMode ? 'Registre-se aqui' : 'Faça login';
+            hideAlert();
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btnLogin = document.getElementById('btnLogin');
+
+            btnLogin.disabled = true;
+            btnLogin.textContent = 'Entrando...';
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                });
+
+                if (error) throw error;
+
+                showAlert('Login realizado com sucesso! Redirecionando...', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+
+            } catch (error) {
+                showAlert(error.message || 'Erro ao fazer login', 'error');
+                btnLogin.disabled = false;
+                btnLogin.textContent = 'Entrar no Sistema';
+            }
+        });
+
+        // Registro
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nomeCompleto = document.getElementById('nomeCompleto').value;
+            const email = document.getElementById('emailRegister').value;
+            const password = document.getElementById('passwordRegister').value;
+            const papelSci = document.getElementById('papelSci').value;
+            const btnRegister = document.getElementById('btnRegister');
+
+            btnRegister.disabled = true;
+            btnRegister.textContent = 'Criando conta...';
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            nome_completo: nomeCompleto,
+                            papel_sci: papelSci
+                        }
+                    }
+                });
+
+                if (error) throw error;
+
+                // Criar perfil
+                if (data.user) {
+                    await supabase.from('profiles').insert({
+                        id: data.user.id,
+                        nome_completo: nomeCompleto,
+                        papel_sci: papelSci
+                    });
+                }
+
+                showAlert('Conta criada com sucesso! Você já pode fazer login.', 'success');
+
+                setTimeout(() => {
+                    document.getElementById('toggleLink').click();
+                    document.getElementById('email').value = email;
+                }, 2000);
+
+            } catch (error) {
+                showAlert(error.message || 'Erro ao criar conta', 'error');
+                btnRegister.disabled = false;
+                btnRegister.textContent = 'Criar Conta';
+            }
+        });
+
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            alert.style.display = 'block';
+        }
+
+        function hideAlert() {
+            document.getElementById('alert').style.display = 'none';
+        }
+
+        lucide.createIcons();
+    </script>
+</body>
+</html>
