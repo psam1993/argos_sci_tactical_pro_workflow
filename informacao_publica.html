@@ -122,7 +122,20 @@ function applyLock(){
     ARGOS.toast('PO bloqueado: somente leitura.');
   }
 }
-document.addEventListener('DOMContentLoaded', ()=>{ load(); renderHints(); applyLock(); });
+document.addEventListener('DOMContentLoaded', ()=>{ 
+  try{
+    if(typeof PLANO_ACAO !== 'undefined'){
+      const cp = PLANO_ACAO.comunicacao_publica || {};
+      pio_msg.value = cp.mensagem_alerta || pio_msg.value;
+      pio_adv.value = (PLANO_ACAO.seguranca?.riscos_principais||[]).slice(0,5).join('; ') || pio_adv.value;
+      // pre-fill contact
+      if(cp.contacto_midia && !Store.get('pio_form')){
+        Store.set('pio_form',{msg:pio_msg.value,adv:pio_adv.value,status:'Rascunho'});
+      }
+    }
+  }catch(e){console.warn('PIO auto-fill:', e)}
+  load(); renderHints(); applyLock();
+});
 </script>
 </section>
     </div>

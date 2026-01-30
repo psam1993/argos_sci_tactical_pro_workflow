@@ -53,24 +53,24 @@
 <div class="grid cols-2">
   <div class="card">
     <h2><i data-lucide="clipboard-list"></i> Planejamento (PO)</h2>
-    <p class="muted">Objetivos, situação, riscos e projeção. Ao salvar, marca o gate de Planejamento no Workflow.</p>
+    <p class="muted">Plano de Ação de Combate ao Incêndio Florestal - Serra Central. Situação, objetivos operacionais, riscos mitigados e projeção 12h.</p>
 
     <div class="grid" style="gap:12px;">
       <div>
         <label>Resumo da Situação</label>
-        <textarea id="pl_sit" rows="5" placeholder="Perímetro, meteorologia, ameaças, prioridades..."></textarea>
+        <textarea id="pl_sit" rows="5" placeholder="Perímetro: 8.2 km² | Contenção: 40% (Flanco Leste) | Frente ativa norte | Meteorologia: crítica (vento 22km/h SE, umidade 18%)"></textarea>
       </div>
       <div>
         <label>Objetivos do PO</label>
-        <textarea id="pl_obj" rows="5" placeholder="1) ... 2) ... 3) ..."></textarea>
+        <textarea id="pl_obj" rows="5" placeholder="1) Manter contenção de 40% em Flanco Leste; 2) Expandir aceiro (Setor Norte); 3) Proteger Torres TX; 4) Manter efetivo seguro em campo; 5) Coordenar apoio aéreo AER-01"></textarea>
       </div>
       <div>
         <label>Riscos e Mitigações</label>
-        <textarea id="pl_risk" rows="4" placeholder="Risco: ... | Mitigação: ..."></textarea>
+        <textarea id="pl_risk" rows="4" placeholder="Risco: Vento aumentando | Mitigação: Reposicionar equipes. Risco: Recursos limitados | Mitigação: Priorizar setores críticos"></textarea>
       </div>
       <div>
         <label>Projeção (próximas 6–12h)</label>
-        <textarea id="pl_proj" rows="3" placeholder="Tendências, vento, topografia, expansão provável..."></textarea>
+        <textarea id="pl_proj" rows="3" placeholder="Tendência: possível expansão NE se vento mudar | Prioridade: Flanco Norte | Contingência: evacuação se necessário"></textarea>
       </div>
       <div style="display:flex; gap:10px;">
         <button class="btn btn-primary" onclick="savePlan()"><i data-lucide="save"></i> Salvar Planejamento</button>
@@ -134,6 +134,16 @@ function savePlan(){
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
+  // Preencher campos a partir do PLANO_ACAO se disponível
+  try{
+    if(typeof PLANO_ACAO !== 'undefined'){
+      const p = PLANO_ACAO.planjamento_form || {};
+      pl_sit.value = p.situacao_incendio ? ('Perímetro: ' + (PLANO_ACAO.incidente?.perimetro_km2||'--') + ' km² | Contenção: ' + (PLANO_ACAO.incidente?.contencao_percentual||'--') + '% | ' + p.situacao_incendio) : pl_sit.value;
+      pl_obj.value = (p.objetivos_operacao||PLANO_ACAO.objetivos_po||[]).join('\n') || pl_obj.value;
+      pl_risk.value = (PLANO_ACAO.seguranca?.riscos_principais||[]).slice(0,5).join('; ') || pl_risk.value;
+      pl_proj.value = (PLANO_ACAO.projecao?.tendencia||'') || pl_proj.value;
+    }
+  }catch(e){console.warn('Planejamento auto-fill:', e)}
   loadPlan();
   renderHints();
   applyLock();

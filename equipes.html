@@ -52,46 +52,287 @@
         <section class="content">
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2><i data-lucide="users"></i> Gerenciamento de Recursos</h2>
-        <button class="btn btn-primary"><i data-lucide="plus"></i> Cadastrar Recurso</button>
+        <div>
+            <h2><i data-lucide="package"></i> Gerenciamento Unificado de Recursos</h2>
+            <p class="muted" style="margin-top:8px; font-size:12px;">Gestão centralizada de guarnições, equipamentos, maquinários e materiais envolvidos na operação.</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddResourceModal()"><i data-lucide="plus"></i> Adicionar Recurso</button>
     </div>
 
-    <table class="table">
+    <!-- OBSERVAÇÃO IMPORTANTE -->
+    <div style="background:linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); padding:16px; border-radius:10px; margin-bottom:20px; border-left:4px solid #d97706;">
+        <div style="display:flex; gap:12px; align-items:flex-start;">
+            <i data-lucide="info" style="width:20px; height:20px; color:#fff; flex-shrink:0; margin-top:2px;"></i>
+            <div>
+                <strong style="color:#fff; display:block; margin-bottom:6px;">Guarnições da Ordem de Serviço ARGOS</strong>
+                <div style="font-size:13px; color:#fffbeb; line-height:1.6;">As guarnições provenientes da Ordem de Serviço (OS) do ARGOS serão automaticamente integradas como recursos no sistema. Todos os recursos (humanos, equipamentos, maquinários e materiais) são gerenciados de forma unificada e simplificada, com rastreamento de status, localização e responsável.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTROS E CATEGORIAS -->
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+        <button class="btn btn-secondary" onclick="filterResources('all')" id="filter_all" style="background:var(--brand);">Todos</button>
+        <button class="btn btn-secondary" onclick="filterResources('guarnicao')">👥 Guarnições</button>
+        <button class="btn btn-secondary" onclick="filterResources('equipamento')">🔧 Equipamentos</button>
+        <button class="btn btn-secondary" onclick="filterResources('maquinario')">⚙️ Maquinários</button>
+        <button class="btn btn-secondary" onclick="filterResources('material')">📦 Materiais</button>
+    </div>
+
+    <!-- TABELA DE RECURSOS -->
+    <table class="table" id="resources_table">
         <thead>
-            <tr><th>Recurso</th><th>Tipo</th><th>Responsável</th><th>Status</th><th>Última Localização</th></tr>
+            <tr>
+                <th>ID / Nome</th>
+                <th>Categoria</th>
+                <th>Responsável</th>
+                <th>Status</th>
+                <th>Localização</th>
+                <th>Ações</th>
+            </tr>
         </thead>
-        <tbody>
-            <tr>
-                <td><strong>GUA-01</strong></td>
-                <td>Combate Terrestre</td>
-                <td>Sgt. Oliveira</td>
-                <td><span class="badge badge-warn">Em Operação</span></td>
-                <td>Setor Norte</td>
-            </tr>
-            <tr>
-                <td><strong>GUA-05</strong></td>
-                <td>Logística</td>
-                <td>Sgt. Santos</td>
-                <td><span class="badge badge-ok">Disponível</span></td>
-                <td>Base PCA</td>
-            </tr>
-            <tr>
-                <td><strong>AER-01</strong></td>
-                <td>Aeronave de Combate</td>
-                <td>Cap. Freitas</td>
-                <td><span class="badge badge-danger">Manutenção</span></td>
-                <td>Hangar Municipal</td>
-            </tr>
-            <tr>
-                <td><strong>AMB-02</strong></td>
-                <td>Saúde / Resgate</td>
-                <td>Ten. Ana</td>
-                <td><span class="badge badge-ok">Prontidão</span></td>
-                <td>PC Central</td>
-            </tr>
+        <tbody id="resources_list">
+            <!-- Preenchido por JavaScript -->
         </tbody>
     </table>
+
+    <!-- RESUMO ESTATÍSTICO -->
+    <div style="margin-top:30px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+        <div style="padding:12px; background:#ffffff05; border-radius:8px; border-left:3px solid #3B82F6;">
+            <div class="muted" style="font-size:12px;">Guarnições Total</div>
+            <div style="font-size:24px; font-weight:700; margin-top:4px;" id="stat_guarnicions">0</div>
+        </div>
+        <div style="padding:12px; background:#ffffff05; border-radius:8px; border-left:3px solid #10B981;">
+            <div class="muted" style="font-size:12px;">Equipamentos Ativos</div>
+            <div style="font-size:24px; font-weight:700; margin-top:4px;" id="stat_equipamentos">0</div>
+        </div>
+        <div style="padding:12px; background:#ffffff05; border-radius:8px; border-left:3px solid #F59E0B;">
+            <div class="muted" style="font-size:12px;">Maquinários em Uso</div>
+            <div style="font-size:24px; font-weight:700; margin-top:4px;" id="stat_maquinarios">0</div>
+        </div>
+        <div style="padding:12px; background:#ffffff05; border-radius:8px; border-left:3px solid #8B5CF6;">
+            <div class="muted" style="font-size:12px;">Materiais Registrados</div>
+            <div style="font-size:24px; font-weight:700; margin-top:4px;" id="stat_materiais">0</div>
+        </div>
+    </div>
 </div>
+
+<!-- MODAL PARA ADICIONAR/EDITAR RECURSO -->
+<div id="resource_modal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:#1a1a2e; border:1px solid var(--border); border-radius:12px; padding:24px; width:90%; max-width:600px; max-height:90vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+        <h3 style="margin-top:0;">Adicionar/Editar Recurso</h3>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+            <div>
+                <label>ID/Nome do Recurso *</label>
+                <input id="resource_id" placeholder="Ex: GUA-01, AER-01, BOM-02" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;">
+            </div>
+            <div>
+                <label>Categoria *</label>
+                <select id="resource_category" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;">
+                    <option value="">Selecione...</option>
+                    <option value="guarnicao">👥 Guarnição (Humana)</option>
+                    <option value="equipamento">🔧 Equipamento (EPI, Ferramentas)</option>
+                    <option value="maquinario">⚙️ Maquinário (Veículos, Aéreos)</option>
+                    <option value="material">📦 Material (Suprimentos, Insumos)</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+            <div>
+                <label>Responsável</label>
+                <input id="resource_responsible" placeholder="Nome do responsável" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;">
+            </div>
+            <div>
+                <label>Status *</label>
+                <select id="resource_status" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;">
+                    <option value="disponivel">✅ Disponível</option>
+                    <option value="em_operacao">⚠️ Em Operação</option>
+                    <option value="prontidao">🔔 Prontidão</option>
+                    <option value="manutencao">🔧 Manutenção</option>
+                    <option value="indisponivel">❌ Indisponível</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="margin-bottom:16px;">
+            <label>Localização/Observações</label>
+            <textarea id="resource_location" placeholder="Ex: Flanco Norte - Aceiro, Base Central, etc." rows="3" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;"></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+            <button class="btn btn-secondary" onclick="closeResourceModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveResource()">Salvar Recurso</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentResourceEdit = null;
+let allResources = [];
+
+// Dados de exemplo iniciais
+const DEFAULT_RESOURCES = [
+    {id: 'GUA-01', category: 'guarnicao', responsible: 'Sgt. Oliveira', status: 'em_operacao', location: 'Flanco Norte - Aceiro'},
+    {id: 'GUA-02', category: 'guarnicao', responsible: 'Sgt. Mendes', status: 'em_operacao', location: 'Flanco Leste - Contenção'},
+    {id: 'GUA-03', category: 'guarnicao', responsible: 'Cabo Silva', status: 'prontidao', location: 'Base - Reserva Estratégica'},
+    {id: 'GUA-04', category: 'guarnicao', responsible: 'Sgt. Rocha', status: 'em_operacao', location: 'Setor Central - Proteção TX'},
+    {id: 'GUA-05', category: 'guarnicao', responsible: 'Sgt. Santos', status: 'disponivel', location: 'Base PCA - Abastecimento'},
+    {id: 'GUA-06', category: 'guarnicao', responsible: 'Cb. Costa', status: 'disponivel', location: 'Base - Suprimentos'},
+    {id: 'AER-01', category: 'maquinario', responsible: 'Cap. Freitas', status: 'manutencao', location: 'Hangar Municipal - Retorno 16:00h'},
+    {id: 'AMB-02', category: 'guarnicao', responsible: 'Ten. Ana', status: 'prontidao', location: 'PC Central - Pronta para Evacuação'},
+];
+
+function getStatusBadge(status) {
+    const statusMap = {
+        'disponivel': {class: 'badge-ok', text: '✅ Disponível'},
+        'em_operacao': {class: 'badge-warn', text: '⚠️ Em Operação'},
+        'prontidao': {class: 'badge-info', text: '🔔 Prontidão'},
+        'manutencao': {class: 'badge-danger', text: '🔧 Manutenção'},
+        'indisponivel': {class: 'badge-danger', text: '❌ Indisponível'}
+    };
+    const s = statusMap[status] || {class: 'badge-muted', text: status};
+    return `<span class="badge ${s.class}">${s.text}</span>`;
+}
+
+function getCategoryLabel(category) {
+    const labels = {
+        'guarnicao': '👥 Guarnição',
+        'equipamento': '🔧 Equipamento',
+        'maquinario': '⚙️ Maquinário',
+        'material': '📦 Material'
+    };
+    return labels[category] || category;
+}
+
+function loadResources() {
+    const saved = Store.get('resources_inventory', null);
+    allResources = saved || DEFAULT_RESOURCES;
+    renderResources();
+}
+
+function renderResources(filterCategory = 'all') {
+    const filtered = filterCategory === 'all' ? allResources : allResources.filter(r => r.category === filterCategory);
+    
+    const html = filtered.map(r => `
+        <tr>
+            <td><strong>${r.id}</strong></td>
+            <td>${getCategoryLabel(r.category)}</td>
+            <td>${r.responsible || '—'}</td>
+            <td>${getStatusBadge(r.status)}</td>
+            <td><span style="font-size:12px;">${r.location || '—'}</span></td>
+            <td>
+                <button class="btn btn-secondary" onclick="editResource('${r.id}')" style="padding:4px 8px; font-size:11px;">✏️ Editar</button>
+                <button class="btn btn-secondary" onclick="deleteResource('${r.id}')" style="padding:4px 8px; font-size:11px; color:#ef4444;">🗑️ Remover</button>
+            </td>
+        </tr>
+    `).join('');
+    
+    document.getElementById('resources_list').innerHTML = html || '<tr><td colspan="6" class="muted" style="text-align:center;">Nenhum recurso encontrado.</td></tr>';
+    
+    // Atualizar estatísticas
+    updateStats();
+}
+
+function filterResources(category) {
+    document.querySelectorAll('#resources_table button').forEach(btn => btn.style.background = '');
+    document.getElementById('filter_' + category).style.background = 'var(--brand)';
+    renderResources(category);
+}
+
+function openAddResourceModal() {
+    currentResourceEdit = null;
+    document.getElementById('resource_id').value = '';
+    document.getElementById('resource_category').value = '';
+    document.getElementById('resource_responsible').value = '';
+    document.getElementById('resource_status').value = 'disponivel';
+    document.getElementById('resource_location').value = '';
+    const modal = document.getElementById('resource_modal');
+    modal.style.display = 'flex';
+}
+
+function closeResourceModal() {
+    document.getElementById('resource_modal').style.display = 'none';
+}
+
+function saveResource() {
+    const id = document.getElementById('resource_id').value.trim().toUpperCase();
+    const category = document.getElementById('resource_category').value;
+    const responsible = document.getElementById('resource_responsible').value.trim();
+    const status = document.getElementById('resource_status').value;
+    const location = document.getElementById('resource_location').value.trim();
+    
+    if(!id || !category) {
+        ARGOS.toast('ID e Categoria são obrigatórios.');
+        return;
+    }
+    
+    if(currentResourceEdit === null) {
+        if(allResources.find(r => r.id === id)) {
+            ARGOS.toast('Recurso com este ID já existe.');
+            return;
+        }
+        allResources.unshift({id, category, responsible, status, location});
+    } else {
+        const idx = allResources.findIndex(r => r.id === currentResourceEdit);
+        if(idx >= 0) {
+            allResources[idx] = {id, category, responsible, status, location};
+        }
+    }
+    
+    Store.set('resources_inventory', allResources);
+    renderResources();
+    closeResourceModal();
+    ARGOS.toast('Recurso salvo com sucesso.');
+}
+
+function editResource(resourceId) {
+    const resource = allResources.find(r => r.id === resourceId);
+    if(!resource) return;
+    
+    currentResourceEdit = resourceId;
+    document.getElementById('resource_id').value = resource.id;
+    document.getElementById('resource_category').value = resource.category;
+    document.getElementById('resource_responsible').value = resource.responsible || '';
+    document.getElementById('resource_status').value = resource.status;
+    document.getElementById('resource_location').value = resource.location || '';
+    const modal = document.getElementById('resource_modal');
+    modal.style.display = 'flex';
+}
+
+function deleteResource(resourceId) {
+    if(!confirm(`Remover recurso ${resourceId}?`)) return;
+    allResources = allResources.filter(r => r.id !== resourceId);
+    Store.set('resources_inventory', allResources);
+    renderResources();
+    ARGOS.toast('Recurso removido.');
+}
+
+function updateStats() {
+    const categories = {
+        'guarnicao': 0,
+        'equipamento': 0,
+        'maquinario': 0,
+        'material': 0
+    };
+    
+    allResources.forEach(r => {
+        if(categories.hasOwnProperty(r.category)) {
+            categories[r.category]++;
+        }
+    });
+    
+    document.getElementById('stat_guarnicions').textContent = categories.guarnicao;
+    document.getElementById('stat_equipamentos').textContent = categories.equipamento;
+    document.getElementById('stat_maquinarios').textContent = categories.maquinario;
+    document.getElementById('stat_materiais').textContent = categories.material;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadResources();
+});
+</script>
 </section>
     </div>
     <script src="assets/data-plano-acao.js"></script>

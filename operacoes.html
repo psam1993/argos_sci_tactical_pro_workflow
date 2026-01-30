@@ -50,16 +50,89 @@
             </div>
         </header>
         <section class="content">
-<div class="grid cols-2">
+<div class="grid cols-1">
   <div class="card">
-    <h2><i data-lucide="swords"></i> Operações (Missões do PO)</h2>
-    <p class="muted">Defina missões, setor e status. Ao salvar, marca o gate de Operações no Workflow.</p>
+    <h2><i data-lucide="users"></i> Efetivo Empregado - Organograma da Operação</h2>
+    <p class="muted">Estruture o organograma operacional com alcance de controle ideal de 5 guarnições por chefe (mínimo 3, máximo 7). Inclua divisões geográficas conforme necessário.</p>
+
+    <div style="display:grid; gap:16px; margin-top:16px;">
+      <!-- CHEFE DE OPERAÇÕES E DIVISÕES -->
+      <div>
+        <label style="display:block; margin-bottom:8px;"><strong>Estrutura Organizacional (Chefe de Operações e Divisões)</strong></label>
+        <button class="btn btn-secondary" onclick="addOperationalDivision()" style="margin-bottom:12px;"><i data-lucide="plus"></i> Adicionar Divisão</button>
+        <div id="op_divisions_list" style="display:grid; gap:12px;"></div>
+      </div>
+
+      <!-- GUARNIÇÕES ALOCADAS -->
+      <div>
+        <label style="display:block; margin-bottom:8px;"><strong>Guarnições Sob Tutela do Chefe de Operações</strong></label>
+        <textarea id="op_teams" placeholder="Liste as guarnições: GUA-01 (3 pessoas), GUA-02 (4 pessoas), GUA-05 (5 pessoas), AER-01 (2 pessoas)..." rows="4" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);"></textarea>
+        <div class="muted" style="font-size:12px; margin-top:6px;">Alcance de controle: idealmente 5 guarnições por chefe. Observar: mínimo 3, máximo 7 guarnições.</div>
+      </div>
+
+      <!-- DIVISÕES GEOGRÁFICAS -->
+      <div>
+        <label style="display:block; margin-bottom:8px;"><strong>Divisões Geográficas por Porção do Terreno</strong></label>
+        <textarea id="op_geographic" placeholder="Ex.: Divisão Norte (Flanco Norte), Divisão Leste (Flanco Leste), Divisão Central (Proteção de estruturas)..." rows="4" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);"></textarea>
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px; margin-bottom:12px;">Situação da Operação do Dia Anterior (Feedback)</h3>
+    <div style="display:grid; gap:12px;">
+      <div>
+        <label><strong>Feedback de Estratégias do Planejamento (PAI do PO anterior)</strong></label>
+        <p class="muted" style="font-size:12px; margin-bottom:8px;">Informe os resultados das estratégias definidas no Planejamento do período anterior e seus desdobramentos em campo.</p>
+        <textarea id="op_prev_feedback" placeholder="Ex.: Estratégia de aceiro Flanco Leste: resultado -- linha contida a 40%, sem avanço. Proteção de estruturas Torre TX: mantida, estrutura preservada..." rows="4" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);"></textarea>
+      </div>
+
+      <div>
+        <label><strong>Ações de Campo e Resultados (para próximo PO)</strong></label>
+        <p class="muted" style="font-size:12px; margin-bottom:8px;">Descreva as ações executadas neste PO, suas localizações, equipes envolvidas e resultados mensuráveis.</p>
+        <textarea id="op_field_actions" placeholder="Ex.: Ação 1 - Aceiro Flanco Norte: Equipes GUA-01 e GUA-02 abriram aceiro de 2.5 km em 6h. Resultado: linha de contenção estabelecida. Ação 2 - Ataque aéreo Setor Central: Helicóptero AER-01 bombardeou 8 sorties. Resultado: fogo reduzido em 60%..." rows="4" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);"></textarea>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:24px;">
+      <button class="btn btn-primary" onclick="saveOperations()"><i data-lucide="save"></i> Salvar Operações (Efetivo + Feedback)</button>
+      <a class="btn btn-secondary" href="mapa.html"><i data-lucide="map"></i> Ver Mapa Tático</a>
+    </div>
+    <div id="op_lock" class="badge badge-danger" style="display:none; width:fit-content; margin-top:12px;">PO BLOQUEADO (Somente leitura)</div>
+  </div>
+
+  <!-- Mensagens Padrão de Segurança (PAI) exibidas nas Operações -->
+  <div style="margin-top:20px; border:1px solid var(--border); border-radius:12px; background:#ffffff02; overflow:hidden;">
+    <div style="padding:16px; background:linear-gradient(135deg, #ffffff02 0%, #ffffff04 100%); border-bottom:1px solid var(--border); cursor:pointer; display:flex; align-items:center; justify-content:space-between; user-select:none;" onclick="toggleRisksOpsGroupOps()">
+      <div style="display:flex; align-items:center; gap:12px; flex:1;">
+        <i data-lucide="shield" style="color:var(--brand); width:20px; height:20px;"></i>
+        <div>
+          <h2 style="margin:0; font-size:16px;">Principais Riscos Identificados na Operação</h2>
+          <div class="muted" style="font-size:12px; margin-top:4px;">Mensagens padrão do PAI. Marque as que se aplicam.</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div class="badge" id="risks_ops_count_ops" style="background:var(--brand); color:#000; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:600;">0 selecionados</div>
+        <i id="risks_ops_toggle_icon_ops" data-lucide="chevron-down" style="width:20px; height:20px; transition:transform 0.2s; color:var(--brand);"></i>
+      </div>
+    </div>
+    <div id="risks_ops_group_ops" style="display:none; padding:16px; background:var(--surface);">
+      <p class="muted" style="font-size:13px; margin-bottom:12px;">Marque os riscos que se aplicam à operação atual e salve para sincronizar com Segurança.</p>
+      <div id="risks_ops_container" style="display:grid; gap:12px; margin-bottom:16px;"></div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-primary" onclick="saveRisksOps()"><i data-lucide="save"></i> Salvar Riscos Selecionados</button>
+        <button class="btn btn-secondary" onclick="clearRisksOps()">Limpar Seleção</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><i data-lucide="swords"></i> Missões de Combate (PO)</h2>
+    <p class="muted">Defina missões de combate: aceiro de contenção, proteção de estruturas, operações aéreas e apoio. Conforme plano de ação aprovado.</p>
 
     <div style="display:grid; gap:12px;">
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
         <div>
           <label>ID da Missão</label>
-          <input id="op_id" placeholder="Ex.: M26"/>
+          <input id="op_id" placeholder="Ex.: M26 | Aceiro/Proteção/Aéreo"/>
         </div>
         <div>
           <label>Status</label>
@@ -71,17 +144,17 @@
         </div>
       </div>
       <div>
-        <label>Descrição</label>
-        <input id="op_title" placeholder="Ex.: Aceiro flanco oeste / proteção de estruturas"/>
+        <label>Descrição (conforme PAI)</label>
+        <input id="op_title" placeholder="Ex.: Aceiro Flanco Norte / Proteção Torre TX / Ataque Aéreo Setor 3"/>
       </div>
       <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
         <div>
           <label>Setor/Divisão</label>
-          <input id="op_sector" placeholder="Ex.: Setor Norte"/>
+          <input id="op_sector" placeholder="Ex.: Flanco Norte | Flanco Leste | Setor Central"/>
         </div>
         <div>
           <label>Recurso(s) designado(s)</label>
-          <input id="op_res" placeholder="Ex.: GUA-01, GUA-05"/>
+          <input id="op_res" placeholder="Ex.: GUA-01, GUA-05 | AER-01 (Helicóptero)"/>
         </div>
       </div>
 
@@ -89,7 +162,7 @@
         <button class="btn btn-primary" onclick="addMission()"><i data-lucide="plus"></i> Adicionar/Atualizar Missão</button>
         <a class="btn btn-secondary" href="workflow.html"><i data-lucide="git-merge"></i> Ver Workflow</a>
       </div>
-      <div id="op_lock" class="badge badge-danger" style="display:none; width:fit-content;">PO BLOQUEADO (Somente leitura)</div>
+      <div id="op_lock_missions" class="badge badge-danger" style="display:none; width:fit-content;">PO BLOQUEADO (Somente leitura)</div>
     </div>
 
     <h3 style="margin-top:18px;">Missões registradas</h3>
@@ -98,19 +171,55 @@
 
   <div class="card">
     <h2><i data-lucide="map"></i> Atalho para Consciência Situacional</h2>
-    <p class="muted">Use o mapa tático para registrar perímetro e pontos críticos. Missões devem refletir o cenário real.</p>
+    <p class="muted">Mapa tático com perímetro (8.2 km²), flancos críticos, divisões geográficas e pontos de interesse. As equipes refletem o organograma e as missões do PO.</p>
     <a class="btn btn-secondary" href="mapa.html" style="width:100%; justify-content:center;"><i data-lucide="map-pin"></i> Abrir Mapa Tático</a>
 
     <div style="margin-top:16px; border:1px dashed var(--border); border-radius:12px; padding:12px; background:#ffffff05;">
-      <div class="stat-label">BOA PRÁTICA</div>
+      <div class="stat-label">SETORES E FRENTES (PAI)</div>
       <div class="muted" style="font-size:13px; margin-top:6px; line-height:1.4;">
-        Sempre que houver mudança relevante (novo setor, nova missão, troca de recurso), gere uma <b>versão</b> do PAI no Workflow.
+        <b>Flanco Leste:</b> 40% contido | <b>Flanco Norte:</b> Aceiro em progresso | <b>Setor Central:</b> Proteção de estruturas TX
       </div>
     </div>
   </div>
 </div>
 
 <script>
+let divisionsArray = [];
+
+function addOperationalDivision(){
+  const id = Date.now();
+  const html = `
+    <div id="div_${id}" style="border:1px solid var(--border); padding:12px; border-radius:8px; background:#ffffff02;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+        <strong>Divisão</strong>
+        <button class="btn" style="padding:4px 8px; font-size:12px;" onclick="removeDivision(${id})"><i data-lucide="trash"></i></button>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+        <input type="text" placeholder="Nome da Divisão (ex: Divisão Norte)" class="div_name_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+        <input type="text" placeholder="Chefe da Divisão" class="div_leader_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+      </div>
+      <input type="text" placeholder="Guarnições: GUA-01, GUA-02, GUA-05 (5 é ideal; min 3, max 7)" class="div_teams_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; margin-bottom:8px;">
+      <textarea placeholder="Setor/Área de Atuação Geográfica" class="div_area_${id}" rows="2" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%;"></textarea>
+    </div>
+  `;
+  document.getElementById('op_divisions_list').insertAdjacentHTML('beforeend', html);
+  divisionsArray.push(id);
+}
+
+function removeDivision(id){
+  document.getElementById(`div_${id}`)?.remove();
+  divisionsArray = divisionsArray.filter(d => d !== id);
+}
+
+function collectDivisions(){
+  return divisionsArray.map(id => ({
+    nome: document.querySelector(`.div_name_${id}`)?.value || '',
+    chefe: document.querySelector(`.div_leader_${id}`)?.value || '',
+    guarnições: document.querySelector(`.div_teams_${id}`)?.value || '',
+    area_geografica: document.querySelector(`.div_area_${id}`)?.value || ''
+  }));
+}
+
 function missions(){ return Store.get('argos_missions', []); }
 function saveMissions(list){ Store.set('argos_missions', list); }
 
@@ -165,15 +274,136 @@ function edit(id){
   op_status.value = m.status||'Pendente';
 }
 
+function saveOperations(){
+  if(isLocked()){ ARGOS.toast('PO bloqueado.'); return; }
+  
+  const payload = {
+    efetivo_empregado: {
+      divisoes: collectDivisions(),
+      guarnições_total: document.getElementById('op_teams')?.value || '',
+      observacoes_alcance_controle: 'Verificar: ideal 5 por chefe, mín 3, máx 7'
+    },
+    divisoes_geograficas: document.getElementById('op_geographic')?.value || '',
+    situacao_anterior: {
+      feedback_estrategias: document.getElementById('op_prev_feedback')?.value || '',
+      acoes_campo_resultados: document.getElementById('op_field_actions')?.value || ''
+    },
+    updated_at: new Date().toISOString()
+  };
+  
+  Store.set('operations_form', payload);
+  markProgress('ops', true);
+  WF.bumpVersion('Operações - Efetivo e Feedback atualizado');
+  ARGOS.toast('Efetivo e Feedback de Operações salvo com sucesso.');
+}
+
+// --- RISCOS PADRÃO (exibidos nas Operações) ---
+const RISKS_DATA_OPS = [
+  {id: 'risk_epi', title: 'EQUIPAMENTOS DE PROTEÇÃO INDIVIDUAL (EPI)', text: 'Atenção rigorosa ao uso obrigatório dos Equipamentos de Proteção Individual em todas as fases da operação. Verificar previamente a integridade, ajuste e adequação dos EPIs. O uso correto é condição indispensável para a preservação da integridade física da tropa e mitigação dos riscos operacionais.'},
+  {id: 'risk_transit', title: 'SEGURANÇA NO TRÂNSITO E CONDUÇÃO OPERACIONAL', text: 'Atenção redobrada aos condutores de viaturas e operadores de equipamentos. Respeitar os limites de velocidade, as normas de circulação e as condições do terreno. A condução segura previne acidentes, preserva vidas e assegura a continuidade da missão.'},
+  {id: 'risk_fatiga', title: 'LIMITES FÍSICOS, FADIGA E HIDRATAÇÃO', text: 'Atenção contínua à hidratação, alimentação, sinais de fadiga, estresse térmico e exaustão física. A guarnição deve manter vigilância mútua, identificar precocemente sinais de sobrecarga e comunicar imediatamente ao comando para adoção das medidas cabíveis.'},
+  {id: 'risk_alcohol', title: 'PROIBIÇÃO DE USO DE ÁLCOOL E SUBSTÂNCIAS PSICOATIVAS', text: 'Atenção à proibição expressa e absoluta do consumo de bebidas alcoólicas e/ou quaisquer substâncias que comprometam a capacidade física e mental durante toda a operação. O descumprimento coloca em risco a segurança individual, coletiva e o sucesso da missão.'},
+  {id: 'risk_fauna', title: 'ANIMAIS PEÇONHENTOS E FAUNA SILVESTRE', text: 'Atenção ao risco permanente de acidentes com animais peçonhentos. Evitar tocar em troncos, pedras, buracos e vegetação densa sem inspeção prévia com os membros desprotegidos. Manter atenção constante ao deslocamento, utilizar corretamente os EPIs e, em caso de incidente, comunicar imediatamente ao comando e seguir os protocolos de atendimento e evacuação.'},
+  {id: 'risk_situational', title: 'CONSCIÊNCIA SITUACIONAL E COMPORTAMENTO DO FOGO', text: 'Manter monitoramento contínuo do comportamento do fogo, das condições meteorológicas e do relevo. Qualquer mudança que represente risco deve ser imediatamente comunicada à guarnição e a chefia imediata. As operações devem iniciar e evoluir sempre a partir de pontos de ancoragem seguros.'},
+  {id: 'risk_escape', title: 'ROTAS DE FUGA', text: 'Definir previamente rotas de fuga principais e alternativas, mantendo-as desobstruídas, sinalizadas e conhecidas por todos. As rotas devem ser constantemente reavaliadas e atualizadas conforme a evolução do incêndio e das condições operacionais.'},
+  {id: 'risk_zones', title: 'ZONAS DE SEGURANÇA', text: 'Identificar e divulgar previamente as zonas de segurança, assegurando que todos conheçam sua localização durante as operações. As zonas devem estar livres de combustível, com descontinuidade de vegetação suficiente para garantir proteção contra calor radiante em emergências, a área queimada geralmente é a opção mais simples.'},
+  {id: 'risk_accidents', title: 'ACIDENTES GERAIS (QUEDAS, COLISÕES E IMPACTOS)', text: 'Atenção aos riscos de escorregões, quedas, colisões e impactos durante deslocamentos a pé ou motorizados. Redobrar a atenção em terrenos irregulares, com baixa visibilidade ou presença de obstáculos naturais e artificiais.'},
+  {id: 'risk_tools', title: 'USO SEGURO DE FERRAMENTAS E EQUIPAMENTOS', text: 'Atenção ao manuseio de ferramentas manuais e equipamentos motomecanizados, principalmente os perfuro cortantes. Realizar inspeção prévia, manter distância segura entre operadores e interromper imediatamente qualquer prática insegura ou fora do padrão técnico.'},
+  {id: 'risk_smoke', title: 'INTOXICAÇÃO POR FUMAÇA E GASES', text: 'Atenção ao risco de inalação de fumaça e gases tóxicos. Posicionar-se sempre no sentido contrário ao deslocamento da fumaça, utilizar balaclava e óculos de proteção e observar sinais de intoxicação, comunicando prontamente ao comando.'},
+  {id: 'risk_burns', title: 'QUEIMADURAS E EXPOSIÇÃO AO CALOR', text: 'Atenção à proximidade excessiva das chamas, brasas e superfícies aquecidas. Respeitar as técnicas de combate, manter rotas de fuga ativas e utilizar corretamente os EPIs resistentes ao calor.'}
+];
+
+function renderRisksOps(){
+  const container = document.getElementById('risks_ops_container');
+  if(!container) return;
+  container.innerHTML = RISKS_DATA_OPS.map(r => `
+    <div style="border:1px solid var(--border); padding:12px; border-radius:8px; background:#ffffff02; display:flex; gap:12px; align-items:flex-start;">
+      <div style="flex-shrink:0;"><input type="checkbox" id="ops_${r.id}" style="width:20px; height:20px; cursor:pointer;" onchange="updateRisksOps()"></div>
+      <div style="flex:1;">
+        <strong style="display:block; margin-bottom:8px; font-size:13px;">${r.title}</strong>
+        <div style="font-size:13px; color:var(--muted); padding:10px; background:#00000008; border-radius:6px;">${r.text}</div>
+      </div>
+    </div>
+  `).join('');
+  // restore saved: prefer specific operations key, fallback to global safety_risks
+  const savedOps = Store.get('operations_safety_risks', []);
+  const safetyGlobal = Store.get('safety_risks', {});
+  const source = (Array.isArray(savedOps) && savedOps.length) ? savedOps : (Array.isArray(safetyGlobal.risks) ? safetyGlobal.risks : []);
+  if(source && Array.isArray(source)){
+    RISKS_DATA_OPS.forEach(r => {
+      const el = document.getElementById(`ops_${r.id}`);
+      if(el) el.checked = source.includes(r.title);
+    });
+    // keep operations key in sync if fallback was used
+    if(!savedOps.length && source.length){ Store.set('operations_safety_risks', source); }
+  }
+}
+
+function updateRisksOps(){
+  const selected = RISKS_DATA_OPS.filter(r => document.getElementById(`ops_${r.id}`)?.checked);
+  const titles = selected.map(r=>r.title);
+  Store.set('operations_safety_risks', titles);
+  
+  // Atualizar contador
+  const countBadge = document.getElementById('risks_ops_count_ops');
+  if(countBadge) {
+    countBadge.textContent = `${selected.length} selecionado${selected.length !== 1 ? 's' : ''}`;
+  }
+}
+
+function toggleRisksOpsGroupOps(){
+  const group = document.getElementById('risks_ops_group_ops');
+  const icon = document.getElementById('risks_ops_toggle_icon_ops');
+  if(group.style.display === 'none' || group.style.display === '') {
+    group.style.display = 'grid';
+    icon.style.transform = 'rotate(0deg)';
+  } else {
+    group.style.display = 'none';
+    icon.style.transform = 'rotate(-90deg)';
+  }
+}
+
+function saveRisksOps(){
+  updateRisksOps();
+  // também sincronizar para a chave usada por seguranca.html
+  const selected = Store.get('operations_safety_risks', []);
+  const payload = { risks: Array.isArray(selected) ? selected : [], custom_risk: null, updated_at: new Date().toISOString() };
+  Store.set('safety_risks', payload);
+  ARGOS.toast('Riscos selecionados salvos em Operações e sincronizados com Segurança.');
+}
+
+function clearRisksOps(){
+  RISKS_DATA_OPS.forEach(r => { const el = document.getElementById(`ops_${r.id}`); if(el) el.checked=false; });
+  updateRisksOps();
+  // limpar também evidências globais
+  Store.set('safety_risks', { risks: [], custom_risk: null, updated_at: new Date().toISOString() });
+}
+
 function applyLock(){
   if(isLocked()){
-    document.querySelectorAll('input, select, button.btn-primary').forEach(el=>el.disabled=true);
-    document.getElementById('op_lock').style.display='inline-block';
+    document.querySelectorAll('input, textarea, select, button.btn-primary, button.btn-secondary').forEach(el=>el.disabled=true);
+    const lockElements = document.querySelectorAll('[id$="_lock"]');
+    lockElements.forEach(el => el.style.display='inline-block');
     ARGOS.toast('PO bloqueado: somente leitura.');
   }
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{ render(); applyLock(); });
+document.addEventListener('DOMContentLoaded', ()=>{ 
+  // Preencher missões a partir do PLANO_ACAO ao carregar
+  try{
+    if(typeof PLANO_ACAO !== 'undefined'){
+      const src = PLANO_ACAO.missoes || [];
+      const mapped = src.map(s=>({ id: s.id, title: s.descricao||s.title||'', sector: s.setor||'', resources: s.recurso||s.recurso||s.recurso, status: s.status||'Pendente' }));
+      if(mapped.length && !Store.get('argos_missions')){
+        Store.set('argos_missions', mapped);
+      }
+    }
+  }catch(e){console.warn('Operações auto-fill:', e)}
+  render();
+  // render risks PAI e aplicar lock
+  try{ renderRisksOps(); }catch(e){/* ignore if not present */}
+  applyLock();
+});
 </script>
 </section>
     </div>

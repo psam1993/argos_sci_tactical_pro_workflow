@@ -138,7 +138,7 @@ function wfRender(){
   `;
 
   // Checklist
-  const labels = {plan:'Planejamento', ops:'Operações', log:'Logística', adm:'Adm/Fin', safety:'Segurança', pio:'Info Pública'};
+  const labels = {plan:'Planejamento', ops:'Operações', log:'Logística', adm:'Adm/Fin', safety:'Segurança', pio:'Info Pública', lno:'Ligações'};
   const rows = Object.entries(po.checklist).map(([key,val])=>{
     const badge = val.done ? 'badge-ok' : 'badge-warn';
     const txt = val.done ? 'OK' : 'Pendente';

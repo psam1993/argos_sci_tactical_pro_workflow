@@ -118,7 +118,19 @@ function applyLock(){
     ARGOS.toast('PO bloqueado: somente leitura.');
   }
 }
-document.addEventListener('DOMContentLoaded', ()=>{ load(); renderHints(); applyLock(); });
+document.addEventListener('DOMContentLoaded', ()=>{ 
+  try{
+    if(typeof PLANO_ACAO !== 'undefined'){
+      const l = PLANO_ACAO.ligacoes || [];
+      if(l.length && !Store.get('lno_form')){
+        const ag = l.map(x=>x.agencia+' ('+ (x.funcao||'') +')').join('\n');
+        const ct = l.map(x=> (x.contato||'') ).join('\n');
+        Store.set('lno_form',{ag:ag,ct:ct,ac:''});
+      }
+    }
+  }catch(e){console.warn('LNO auto-fill:', e)}
+  load(); renderHints(); applyLock();
+});
 </script>
 </section>
     </div>

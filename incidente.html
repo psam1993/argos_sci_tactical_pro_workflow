@@ -70,18 +70,31 @@
             </div>
             <div class="form-group">
                 <label>Nome da Operação</label>
-                <input type="text" value="Incêndio Florestal - Serra das Araras">
+                <input type="text" value="Incêndio Florestal - Serra Central | Combate Estruturado">
             </div>
             <div class="form-group">
                 <label>Comandante do Incidente (CI)</label>
-                <input type="text" value="Cap. Wihby">
+                <input id="ci_name" type="text" value="Maj. Rodrigo Silva">
+            </div>
+            <div class="form-group">
+                <label>Dados do Incêndio (PAI)</label>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                  <input id="evento_num" type="text" placeholder="Número do evento (Ev-2026.xxx)">
+                  <input id="categoria_evt" type="text" placeholder="Categoria do evento">
+                  <input id="data_inicio_evt" type="text" placeholder="Data / Hora de Início">
+                  <input id="area_ha" type="text" placeholder="Área afetada (ha)">
+                </div>
             </div>
             <div class="form-group">
                 <label>Objetivos de Comando</label>
-                <textarea rows="5">1. Priorizar a segurança da vida e das equipes terrestres;\n2. Proteger as torres de transmissão localizadas ao norte;\n3. Minimizar danos ambientais na área de preservação permanente.</textarea>
+                <textarea rows="5">1. Priorizar a segurança da vida e das equipes terrestres;
+2. Proteger as torres de transmissão (TX) localizadas ao norte;
+3. Conter o incêndio em 40% (Flanco Leste) e expandir contenção no Flanco Norte;
+4. Minimizar danos ambientais na área de preservação permanente;
+5. Manter comunicações com órgãos de defesa civil e meio ambiente.</textarea>
             </div>
             <div style="display:flex; gap:10px; margin-top:10px;">
-                <button type="button" class="btn btn-primary" onclick="if(isLocked()){ARGOS.toast('PO bloqueado: ajuste no próximo PO.'); return;} Store.set('argos_inc', {id:'SCI-2026-004', name: document.querySelector('input[value="Incêndio Florestal - Serra Central"]')?.value || 'Incêndio', status:'Ativo', level: document.querySelector('select')?.value || 'Nível 2', ci: document.querySelector('input[value="Maj. Rodrigo Silva"]')?.value || 'CI', po:'PO-02', start:'13 Jan 2026, 08:30'}); ARGOS.toast('Incidente atualizado!');">Salvar Configurações</button>
+                <button type="button" class="btn btn-primary" onclick="if(isLocked()){ARGOS.toast('PO bloqueado: ajuste no próximo PO.'); return;} Store.set('argos_inc', {id:'SCI-2026-004', name: document.querySelector('input[value="Incêndio Florestal - Serra Central"]')?.value || 'Incêndio', status:'Ativo', level: document.querySelector('select')?.value || 'Nível 2', ci: document.getElementById('ci_name')?.value || 'CI', po:'PO-02', start:'13 Jan 2026, 08:30'}); ARGOS.toast('Incidente atualizado!');">Salvar Configurações</button>
                 <button type="button" class="btn btn-secondary">Exportar SCI 201</button>
             </div>
         </form>
@@ -93,7 +106,7 @@
         <div style="display:flex; flex-direction:column; gap:15px; padding-left:20px;">
             <div style="border: 2px solid var(--brand); padding:15px; border-radius:10px; text-align:center; background:#10b98110">
                 <div class="muted" style="font-size:11px; font-weight:700;">CI - COMANDANTE</div>
-                <strong style="color:var(--brand)">Cap. Wihby</strong>
+                <strong style="color:var(--brand)">Maj. Rodrigo Silva</strong>
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
@@ -128,5 +141,25 @@
     </div>
     <script src="assets/data-plano-acao.js"></script>
     <script src="assets/app.js"></script>
+        <script>
+            function initPlanoDados(){
+                try{
+                    if(typeof PLANO_ACAO !== 'undefined'){
+                        const p = PLANO_ACAO.planejamento_form || {};
+                        const inc = PLANO_ACAO.incidente || {};
+                        if(document.getElementById('ci_name')) document.getElementById('ci_name').value = inc.comandante || inc.ci || document.getElementById('ci_name').value;
+                        if(p.dados_incendio){
+                            document.getElementById('evento_num').value = p.dados_incendio.numero_evento || '';
+                            document.getElementById('categoria_evt').value = p.dados_incendio.categoria || '';
+                            document.getElementById('data_inicio_evt').value = p.dados_incendio.data_hora_inicio || '';
+                            document.getElementById('area_ha').value = p.dados_incendio.area_influencia_ha || '';
+                        }
+                    }
+                }catch(e){console.warn('Preenchimento PAI: ', e)}
+            }
+            document.addEventListener('DOMContentLoaded', function(){
+                initPlanoDados();
+            });
+        </script>
 </body>
 </html>

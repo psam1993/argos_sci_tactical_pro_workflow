@@ -53,26 +53,26 @@
 <div class="grid cols-2">
   <div class="card">
     <h2><i data-lucide="truck"></i> Logística (Apoio do PO)</h2>
-    <p class="muted">Registre necessidades, comunicações, alimentação, combustível e pendências. Ao salvar, marca o gate de Logística.</p>
+    <p class="muted">Plano de Apoio Logístico para Combate ao Incêndio Florestal: necessidades, comunicação, transporte, combustível e pendências críticas.</p>
 
     <div style="display:grid; gap:12px;">
       <div>
         <label>Necessidades Prioritárias</label>
-        <textarea id="lg_need" rows="4" placeholder="Ex.: alimentação Setor Norte, água, EPI, ferramentas..."></textarea>
+        <textarea id="lg_need" rows="4" placeholder="Ex.: Água p/ AER-01 | Alimentação Setor Norte (GUA-01) | EPI para 6 equipes | Mangueiras e kit aceiro | Medicamentos e bandagens"></textarea>
       </div>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
         <div>
           <label>Plano de Comunicação (resumo)</label>
-          <textarea id="lg_comms" rows="4" placeholder="Frequências, canais, contato..."></textarea>
+          <textarea id="lg_comms" rows="4" placeholder="VHF: 161.925 (comando) | UHF: Freq.X (campo) | Contato CI: Maj. Rodrigo Silva | Backup: Sgt. Porto (Logística)"></textarea>
         </div>
         <div>
           <label>Transporte / Combustível</label>
-          <textarea id="lg_trans" rows="4" placeholder="Rotas, viaturas, reabastecimento..."></textarea>
+          <textarea id="lg_trans" rows="4" placeholder="GUA-05 (rota base-norte) | Combustível: 200L disponíveis | Reabastecimento 04:00h | Rota de evacuação secundária mapeada"></textarea>
         </div>
       </div>
       <div>
-        <label>Pendências</label>
-        <textarea id="lg_pend" rows="3" placeholder="Ex.: manutenção AER-01, reposição mangueiras..."></textarea>
+        <label>Pendências Críticas</label>
+        <textarea id="lg_pend" rows="3" placeholder="AER-01: Manutenção concluir até 16:00h | Reposição de mangueiras para GUA-01 | Verificar bateria rádios portáteis"></textarea>
       </div>
 
       <div style="display:flex; gap:10px;">
@@ -85,13 +85,13 @@
 
   <div class="card">
     <h2><i data-lucide="users"></i> Integração com Recursos</h2>
-    <p class="muted">Use a tela de Recursos para manter status e localização. A logística depende disso.</p>
+    <p class="muted">Recursos em campo: GUA-01 (Combate), GUA-05 (Logística), AER-01 (Aéreo), AMB-02 (Saúde/Resgate). Mantenha status e localização atualizado.</p>
     <a class="btn btn-secondary" href="equipes.html" style="width:100%; justify-content:center;"><i data-lucide="users"></i> Abrir Recursos</a>
 
     <div style="margin-top:16px; border:1px dashed var(--border); border-radius:12px; padding:12px; background:#ffffff05;">
-      <div class="stat-label">GATE MÍNIMO</div>
+      <div class="stat-label">RESPONSÁVEL LOGÍSTICA</div>
       <div class="muted" style="font-size:13px; margin-top:6px; line-height:1.4;">
-        Para enviar o PO à revisão, o gate de <b>Logística</b> deve estar OK (mesmo em nível 1/2).
+        <b>Sgt. Porto</b> - Chefia de Logística | Telefone: (65) XXXXX-XXXX | Apoio: GUA-05 (Sgt. Santos)
       </div>
     </div>
   </div>
@@ -129,7 +129,22 @@ function applyLock(){
   }
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{ load(); applyLock(); });
+document.addEventListener('DOMContentLoaded', ()=>{ 
+  try{
+    if(typeof PLANO_ACAO !== 'undefined'){
+      const lg = PLANO_ACAO.logistica || {};
+      lg_need.value = (lg.necessidades_prioritarias||[]).join('\n') || lg_need.value;
+      lg_comms.value = (lg.comunicacao ? (lg.comunicacao.vhf_comando + ' | ' + (lg.comunicacao.contatos?.contato_ci?.nome||'') ) : '') || lg_comms.value;
+      lg_trans.value = (lg.transporte ? (lg.transporte.rota_principal + ' | Combustível: ' + (lg.transporte.combustivel_disponivel||'--')) : '') || lg_trans.value;
+      lg_pend.value = (lg.pendencias||[]).join('; ') || lg_pend.value;
+      // salvar automaticamente em Store se vazio
+      if(!Store.get('log_form')){
+        Store.set('log_form',{need:lg_need.value,comms:lg_comms.value,trans:lg_trans.value,pend:lg_pend.value});
+      }
+    }
+  }catch(e){console.warn('Logística auto-fill:', e)}
+  load(); applyLock();
+});
 </script>
 </section>
     </div>

@@ -52,66 +52,321 @@
         <section class="content">
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-        <h2><i data-lucide="map-pin"></i> Consciência Situacional</h2>
-        <div style="display:flex; gap:10px;">
-            <select style="width:auto; margin:0; padding:8px;">
-                <option>Visão Satélite</option>
-                <option>Visão Relevo (Topo)</option>
-                <option>Mapa Base</option>
+        <h2><i data-lucide="map-pin"></i> Consciência Situacional - Mapa Tático</h2>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <select id="map_layer" style="width:auto; margin:0; padding:8px;" onchange="changeLayer()">
+                <option value="osm">Mapa Base</option>
+                <option value="satellite" selected>Visão Satélite</option>
+                <option value="topo">Topografia</option>
             </select>
-            <button class="btn btn-primary" onclick="ARGOS.toast('Ferramenta de marcação ativa')"><i data-lucide="plus"></i> Adicionar Ponto</button>
+            <button class="btn btn-secondary" id="btn_draw_line" onclick="toggleDrawMode('line')" style="display:none;"><i data-lucide="pen-tool"></i> Aceiro</button>
+            <button class="btn btn-secondary" id="btn_draw_poly" onclick="toggleDrawMode('polygon')" style="display:none;"><i data-lucide="square"></i> Zona</button>
+            <button class="btn btn-primary" id="btn_refresh_teams" onclick="loadTeamsFromOps()"><i data-lucide="rotate-cw"></i> Sincronizar Equipes</button>
+            <button class="btn btn-secondary" onclick="addNewTeamToMap()"><i data-lucide="plus"></i> Adicionar Equipe em Campo</button>
         </div>
     </div>
 
-    <div id="map"></div>
+    <div id="map" style="height:500px; border-radius:10px; overflow:hidden;"></div>
 
-    <div style="margin-top:20px; display:flex; gap:25px; flex-wrap:wrap; background: #00000020; padding:15px; border-radius:10px;">
+    <div style="margin-top:20px; display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:10px; background: #00000020; padding:15px; border-radius:10px;">
         <div style="display:flex; align-items:center; gap:8px;">
-            <span style="width:15px; height:15px; background:var(--danger); border-radius:3px;"></span> 
-            <span style="font-size:13px; font-weight:600;">Foco Ativo</span>
+            <span style="width:15px; height:15px; background:#ef4444; border-radius:50%;"></span> 
+            <span style="font-size:13px; font-weight:600;">Área de Trabalho</span>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-            <span style="width:15px; height:15px; background:var(--brand); border-radius:3px;"></span> 
-            <span style="font-size:13px; font-weight:600;">Recurso Ativo</span>
+            <span style="width:15px; height:15px; background:#3b82f6; border-radius:50%;"></span> 
+            <span style="font-size:13px; font-weight:600;">Equipe de Campo</span>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-            <span style="width:15px; height:3px; background:var(--warn); border-radius:1px;"></span> 
-            <span style="font-size:13px; font-weight:600;">Linha de Aceiro</span>
+            <span style="width:15px; height:3px; background:#22c55e; border-radius:1px;"></span> 
+            <span style="font-size:13px; font-weight:600;">Linha de Defesa</span>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
-            <span style="width:15px; height:15px; border:2px solid var(--accent); border-radius:3px;"></span> 
-            <span style="font-size:13px; font-weight:600;">PC / Posto de Comando</span>
+            <span style="width:15px; height:15px; background:#0ea5e9; border-radius:3px;"></span> 
+            <span style="font-size:13px; font-weight:600;">PC (Azul)</span>
         </div>
+    </div>
+
+    <div style="margin-top:20px; padding:15px; background:#ffffff02; border-radius:10px;">
+        <h3 style="margin-top:0;">Editar Posições de Equipes</h3>
+        <div id="teams_control_panel" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:16px;"></div>
+        <h3>Equipes Posicionadas</h3>
+        <div id="teams_list" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;"></div>
     </div>
 </div>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const map = L.map('map').setView([-15.603, -56.096], 14);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap'
-        }).addTo(map);
+let mapInstance, teamMarkers = {}, drawMode = null, isDrawing = false, drawnItems = new L.FeatureGroup(), layers = {}, pcMarker;
 
-        // Área de Incêndio (Círculo)
-        L.circle([-15.604, -56.095], {
-            color: 'red',
-            fillColor: '#f03',
-            fillOpacity: 0.35,
-            radius: 400
-        }).addTo(map).bindPopup("Área de Incêndio Crítica");
+function initMap(){
+  mapInstance = L.map('map').setView([-15.603, -56.096], 14);
+  
+  // Múltiplas camadas de tiles
+  layers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution: '© OpenStreetMap'});
+  layers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {attribution: '© Esri'});
+  layers.topo = L.tileLayer('https://tile.opentopomap.org/{z}/{x}/{y}.png', {attribution: '© OpenTopoMap'});
+  
+  layers.satellite.addTo(mapInstance);
+  mapInstance.addLayer(drawnItems);
 
-        // Equipe em campo
-        const teamIcon = L.divIcon({
-            html: '<div style="background:var(--brand); width:12px; height:12px; border-radius:50%; border:2px solid #fff;"></div>',
-            className: ''
-        });
-        L.marker([-15.599, -56.101], {icon: teamIcon}).addTo(map).bindPopup("<b>Equipe GUA-01</b><br>Missão: Aceiro");
+  // Área de Trabalho (VERMELHA)
+  L.circle([-15.604, -56.095], { 
+    color:'#ef4444', 
+    fillColor:'#ef4444', 
+    fillOpacity:0.2, 
+    radius:400,
+    weight: 2
+  }).addTo(mapInstance).bindPopup('Área de Trabalho - 400m');
 
-        // Posto de Comando
-        L.marker([-15.610, -56.090]).addTo(map).bindPopup("<b>POSTO DE COMANDO (PC)</b>");
+  // Posto de Comando (AZUL)
+  const pcIcon = L.divIcon({
+    html: '<div style="background:#0ea5e9; width:18px; height:18px; border:3px solid #fff; border-radius:4px; display:flex; align-items:center; justify-content:center; font-weight:bold; color:#fff; font-size:10px;">PC</div>',
+    className: '',
+    iconSize: [24, 24]
+  });
+  
+  pcMarker = L.marker([-15.610, -56.090], {icon: pcIcon, draggable: true}).addTo(mapInstance);
+  pcMarker.bindPopup(`<b>POSTO DE COMANDO (PC)</b><br><small>Lat: -15.6100, Lng: -56.0900</small><br><button class="btn btn-secondary" style="font-size:11px; margin-top:8px; width:100%;" onclick="editPCPosition()">Editar Posição</button>`);
+  
+  pcMarker.on('dragend', () => { 
+    const pos = pcMarker.getLatLng();
+    const mapData = Store.get('map_drawings', {});
+    mapData.pc_position = {lat: pos.lat, lng: pos.lng};
+    Store.set('map_drawings', mapData);
+    updatePCPopup();
+  });
+
+  loadTeamsFromOps();
+  loadMapDrawings();
+}
+
+function updatePCPopup(){
+  if(pcMarker) {
+    const pos = pcMarker.getLatLng();
+    pcMarker.setPopupContent(`<b>POSTO DE COMANDO (PC)</b><br><small>Lat: ${pos.lat.toFixed(4)}, Lng: ${pos.lng.toFixed(4)}</small><br><button class="btn btn-secondary" style="font-size:11px; margin-top:8px; width:100%;" onclick="editPCPosition()">Editar Posição</button>`);
+  }
+}
+
+function editPCPosition(){
+  const pos = pcMarker.getLatLng();
+  const newLat = prompt('Latitude do PC:', pos.lat.toFixed(6));
+  if(newLat === null) return;
+  const newLng = prompt('Longitude do PC:', pos.lng.toFixed(6));
+  if(newLng === null) return;
+  
+  try {
+    const lat = parseFloat(newLat);
+    const lng = parseFloat(newLng);
+    if(isNaN(lat) || isNaN(lng)) throw new Error('Valores inválidos');
+    pcMarker.setLatLng([lat, lng]);
+    mapInstance.panTo([lat, lng]);
+    
+    const mapData = Store.get('map_drawings', {});
+    mapData.pc_position = {lat, lng};
+    Store.set('map_drawings', mapData);
+    updatePCPopup();
+    ARGOS.toast('Posição do PC atualizada.');
+  } catch(e) {
+    ARGOS.toast('Erro ao atualizar PC: ' + e.message);
+  }
+}
+
+function changeLayer(){
+  const layer = document.getElementById('map_layer').value;
+  Object.keys(layers).forEach(l => mapInstance.removeLayer(layers[l]));
+  mapInstance.addLayer(layers[layer]);
+}
+
+function loadTeamsFromOps(){
+  const opData = Store.get('operations_form', null);
+  const teamsStr = opData?.efetivo_empregado?.guarnições_total || '';
+  const teamIds = teamsStr.split(',').map(t => t.trim()).filter(t => t);
+  
+  // Limpar marcadores antigos
+  Object.keys(teamMarkers).forEach(id => mapInstance.removeLayer(teamMarkers[id]));
+  teamMarkers = {};
+  
+  // Cores padrão para equipes
+  const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4'];
+  let colorIdx = 0;
+  
+  // Carregar posições salvas
+  const mapData = Store.get('map_drawings', {});
+  const savedPositions = mapData.team_positions || {};
+  
+  teamIds.forEach((teamId, idx) => {
+    const color = colors[colorIdx++ % colors.length];
+    
+    // Tentar carregar posição salva, senão usar aleatória
+    let lat, lng;
+    if(savedPositions[teamId]) {
+      lat = savedPositions[teamId].lat;
+      lng = savedPositions[teamId].lng;
+    } else {
+      lat = -15.604 + (Math.random() - 0.5) * 0.008;
+      lng = -56.095 + (Math.random() - 0.5) * 0.008;
+    }
+    
+    const icon = L.divIcon({
+      html: `<div style="background:${color}; width:20px; height:20px; border-radius:50%; border:3px solid #fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.3);">${teamId.slice(-2)}</div>`,
+      className: '',
+      iconSize: [26, 26]
     });
+    
+    const marker = L.marker([lat, lng], {icon, draggable: true}).addTo(mapInstance);
+    updateTeamPopup(marker, teamId, lat, lng);
+    
+    marker.on('dragend', () => { 
+      const pos = marker.getLatLng();
+      saveTeamPosition(teamId, pos);
+      updateTeamPopup(marker, teamId, pos.lat, pos.lng);
+    });
+    
+    teamMarkers[teamId] = {marker, color};
+  });
+  
+  renderTeamsControlPanel(teamIds);
+  renderTeamsList(teamIds);
+  ARGOS.toast(`${teamIds.length} equipes carregadas do planejamento.`);
+}
+
+function updateTeamPopup(marker, teamId, lat, lng){
+  marker.bindPopup(`
+    <div>
+      <b>${teamId}</b><br>
+      <small>Lat: ${lat.toFixed(4)}<br>Lng: ${lng.toFixed(4)}</small><br>
+      <button class="btn btn-secondary" style="font-size:11px; margin-top:8px; width:100%;" onclick="editTeamPosition('${teamId}')">Editar Coords</button>
+    </div>
+  `);
+}
+
+function editTeamPosition(teamId){
+  const marker = teamMarkers[teamId]?.marker;
+  if(!marker) return;
+  
+  const pos = marker.getLatLng();
+  const newLat = prompt(`Latitude de ${teamId}:`, pos.lat.toFixed(6));
+  if(newLat === null) return;
+  
+  const newLng = prompt(`Longitude de ${teamId}:`, pos.lng.toFixed(6));
+  if(newLng === null) return;
+  
+  try {
+    const lat = parseFloat(newLat);
+    const lng = parseFloat(newLng);
+    if(isNaN(lat) || isNaN(lng)) throw new Error('Valores inválidos');
+    
+    marker.setLatLng([lat, lng]);
+    saveTeamPosition(teamId, {lat, lng});
+    updateTeamPopup(marker, teamId, lat, lng);
+    ARGOS.toast(`Posição de ${teamId} atualizada.`);
+  } catch(e) {
+    ARGOS.toast('Erro: ' + e.message);
+  }
+}
+
+function renderTeamsControlPanel(teamIds){
+  const html = teamIds.map((tid) => `
+    <div style="padding:12px; background:#ffffff05; border-radius:8px; border-left:3px solid ${teamMarkers[tid]?.color || '#3B82F6'};">
+      <div style="font-weight:600; margin-bottom:8px;">${tid}</div>
+      <button class="btn btn-secondary" onclick="editTeamPosition('${tid}')" style="font-size:11px; width:100%; margin-bottom:6px;">📍 Editar Coords</button>
+      <button class="btn btn-secondary" onclick="panToTeam('${tid}')" style="font-size:11px; width:100%;">🎯 Localizar</button>
+    </div>
+  `).join('');
+  
+  document.getElementById('teams_control_panel').innerHTML = html || '<div class="muted">Nenhuma equipe. Sincronize com Operações.</div>';
+}
+
+function renderTeamsList(teamIds){
+  const html = teamIds.map((tid) => {
+    const marker = teamMarkers[tid]?.marker;
+    const pos = marker ? marker.getLatLng() : {lat: 0, lng: 0};
+    
+    return `
+      <div style="padding:12px; background:#ffffff05; border-radius:8px; border-left:3px solid ${teamMarkers[tid]?.color || '#3B82F6'};">
+        <div style="font-weight:600;">${tid}</div>
+        <div style="font-size:11px; color:var(--muted); margin-top:4px; font-family:monospace;">
+          Lat: ${pos.lat.toFixed(4)}<br>Lng: ${pos.lng.toFixed(4)}
+        </div>
+        <div style="font-size:11px; color:var(--muted); margin-top:4px;">Ativa em campo</div>
+      </div>
+    `;
+  }).join('');
+  
+  document.getElementById('teams_list').innerHTML = html || '<div class="muted">Nenhuma equipe posicionada. Sincronize com Operações.</div>';
+}
+
+function saveTeamPosition(teamId, latLng){
+  const mapData = Store.get('map_drawings', {});
+  if(!mapData.team_positions) mapData.team_positions = {};
+  mapData.team_positions[teamId] = {lat: latLng.lat, lng: latLng.lng};
+  Store.set('map_drawings', mapData);
+}
+
+function panToTeam(teamId){
+  const marker = teamMarkers[teamId]?.marker;
+  if(marker) {
+    mapInstance.panTo(marker.getLatLng());
+    marker.openPopup();
+  }
+}
+
+function addNewTeamToMap(){
+  const teamId = prompt('Identificador da equipe (ex: GUA-01, AER-02):', 'GUA-');
+  if(!teamId || !teamId.trim()) return;
+  
+  const tid = teamId.trim().toUpperCase();
+  
+  // Verificar se já existe
+  if(teamMarkers[tid]) {
+    ARGOS.toast(`Equipe ${tid} já posicionada no mapa.`);
+    return;
+  }
+  
+  // Posição padrão próxima ao PC
+  const lat = -15.604 + (Math.random() - 0.5) * 0.005;
+  const lng = -56.095 + (Math.random() - 0.5) * 0.005;
+  
+  // Cores padrão para equipes
+  const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4'];
+  const color = colors[Object.keys(teamMarkers).length % colors.length];
+  
+  const icon = L.divIcon({
+    html: `<div style="background:${color}; width:20px; height:20px; border-radius:50%; border:3px solid #fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.3);">${tid.slice(-2)}</div>`,
+    className: '',
+    iconSize: [26, 26]
+  });
+  
+  const marker = L.marker([lat, lng], {icon, draggable: true}).addTo(mapInstance);
+  updateTeamPopup(marker, tid, lat, lng);
+  
+  marker.on('dragend', () => { 
+    const pos = marker.getLatLng();
+    saveTeamPosition(tid, pos);
+    updateTeamPopup(marker, tid, pos.lat, pos.lng);
+  });
+  
+  teamMarkers[tid] = {marker, color};
+  saveTeamPosition(tid, {lat, lng});
+  
+  // Atualizar painel de controle
+  const teamIds = Object.keys(teamMarkers);
+  renderTeamsControlPanel(teamIds);
+  renderTeamsList(teamIds);
+  
+  mapInstance.panTo([lat, lng]);
+  ARGOS.toast(`Equipe ${tid} adicionada ao mapa.`);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  initMap();
+});
 </script>
 </section>
     </div>

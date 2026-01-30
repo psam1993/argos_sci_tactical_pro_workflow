@@ -50,75 +50,357 @@
             </div>
         </header>
         <section class="content">
-<div class="grid cols-2">
-  <div class="card">
-    <h2><i data-lucide="hard-hat"></i> Segurança (Safety)</h2>
-    <p class="muted">Identificação de perigos, mitigação e briefing de segurança. Ao salvar, marca o gate de Segurança.</p>
+<div class="card">
+    <h2><i data-lucide="hard-hat"></i> Segurança e Saúde na Operação</h2>
 
-    <div style="display:grid; gap:12px;">
-      <div>
-        <label>Perigos Identificados</label>
-        <textarea id="sf_haz" rows="5" placeholder="Ex.: vento forte, linhas de energia, fadiga, tráfego, fumaça..."></textarea>
-      </div>
-      <div>
-        <label>Mitigações / Controles</label>
-        <textarea id="sf_mit" rows="5" placeholder="Ex.: zonas seguras, EPI, rotas de fuga, limites de tempo..."></textarea>
-      </div>
-      <div>
-        <label>Briefing de Segurança (mensagem curta)</label>
-        <textarea id="sf_msg" rows="3" placeholder="Mensagem para todas as equipes no início do PO..."></textarea>
-      </div>
-
-      <div style="display:flex; gap:10px;">
-        <button class="btn btn-primary" onclick="saveSafety()"><i data-lucide="save"></i> Salvar Segurança</button>
-        <a class="btn btn-secondary" href="workflow.html"><i data-lucide="git-merge"></i> Ver Workflow</a>
-      </div>
-      <div id="sf_lock" class="badge badge-danger" style="display:none; width:fit-content;">PO BLOQUEADO (Somente leitura)</div>
+    <div style="margin-top:20px; padding:15px; background:#00000015; border-radius:8px; border-left:3px solid var(--brand);">
+      <h4 style="margin-top:0;">Evidências de Segurança (Textos Confirmados):</h4>
+      <div id="evidence_list" style="display:grid; gap:8px;"></div>
     </div>
-  </div>
 
-  <div class="card">
-    <h2><i data-lucide="sparkles"></i> Regra por Nível</h2>
-    <div id="sf_hint" class="muted" style="font-size:13px; line-height:1.5;"></div>
+    <!-- Principais Riscos Identificados na Operação (PAI) - COLAPSÁVEL -->
+    <div style="margin-top:20px; border:1px solid var(--border); border-radius:10px; overflow:hidden;">
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; background:#ffffff05; cursor:pointer; border-bottom:1px solid var(--border);" onclick="toggleRisksOpsGroup()">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <i data-lucide="chevron-down" id="risks_ops_toggle_icon" style="width:20px; height:20px; transition:transform 0.2s; transform: rotate(0deg);"></i>
+          <h3 style="margin:0; font-size:16px;">Principais Riscos Identificados na Operação</h3>
+        </div>
+        <span class="badge" id="risks_ops_count" style="background:var(--brand);">0 selecionados</span>
+      </div>
+      
+      <div id="risks_ops_group" style="padding:16px; display:grid; border-top:1px solid var(--border);">
+        <p class="muted" style="margin-top:0; margin-bottom:16px;">Mensagens padrão do PAI. Marque os riscos que se aplicam à operação atual. Os selecionados aparecerão nas Evidências acima.</p>
+        <div id="risks_ops_container" style="display:grid; gap:12px; margin-bottom:16px;"></div>
+        <div style="display:flex; gap:10px;">
+          <button class="btn btn-primary" onclick="saveRisksOps()"><i data-lucide="save"></i> Salvar Riscos Selecionados</button>
+          <button class="btn btn-secondary" onclick="clearRisksOps()">Limpar Seleção</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RISCO CUSTOMIZADO -->
+    <div class="risk-card" id="card_risk_custom" style="border:2px solid var(--border); padding:16px; border-radius:10px; background:#ffffff02; transition:all 0.2s; cursor:pointer; margin-top:16px;" onclick="toggleRisk('risk_custom')">
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="flex-shrink:0;">
+          <input type="checkbox" id="risk_custom" class="risk-checkbox" onchange="updateRisks()" style="width:22px; height:22px; cursor:pointer; margin-top:2px;">
+        </div>
+        <div style="flex:1;">
+          <strong style="display:block; margin-bottom:10px; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text);">Risco Customizado (não listado acima)</strong>
+          <textarea id="risk_custom_desc" placeholder="Descreva outro risco de segurança identificado com a respectiva mensagem padrão..." style="width:100%; margin-top:8px; padding:10px; border-radius:6px; border:1px solid var(--border); background:var(--surface); color:inherit; font-size:13px; font-family:inherit; line-height:1.5; min-height:60px; resize:vertical;" onchange="updateRisks()" onclick="event.stopPropagation()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:20px; padding:16px; background:#ffffff05; border-radius:10px; border:1px solid var(--border);">
+      <h4 style="margin-top:0; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
+        <i data-lucide="plus-circle" style="width:20px; height:20px;"></i>
+        Adicionar Nova Mensagem de Segurança
+      </h4>
+      <p class="muted" style="font-size:12px; margin-bottom:12px;">Incluir mensagens padrões adicionais ao banco de riscos de segurança.</p>
+      <div style="display:grid; grid-template-columns:1fr 4fr; gap:10px; margin-bottom:12px;">
+        <input type="text" id="new_risk_title" placeholder="Título do risco" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); font-size:12px;">
+        <textarea id="new_risk_msg" placeholder="Mensagem padrão / Procedimento de segurança..." style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); font-size:12px; font-family:inherit; line-height:1.5; min-height:50px; resize:vertical;"></textarea>
+      </div>
+      <button class="btn btn-secondary" onclick="addNewRiskMessage()" style="width:100%; justify-content:center;">
+        <i data-lucide="plus"></i> Incluir Mensagem
+      </button>
+    </div>
+
+    <h3 style="margin-top:24px; margin-bottom:12px;">Plano Médico</h3>
+    <div style="display:grid; gap:12px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label><input type="checkbox" id="med_ambulancia" onchange="updateMedical()"> Há ambulância na operação?</label>
+        </div>
+        <div>
+          <label><input type="checkbox" id="med_equipe" onchange="updateMedical()"> Há equipe de saúde na operação?</label>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <div>
+          <label><input type="checkbox" id="med_medico" onchange="updateMedical()"> Há médico na operação?</label>
+        </div>
+      </div>
+      
+      <div style="margin-top:12px;">
+        <label>Modo de evacuação em caso de emergência:</label>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px;">
+          <label><input type="radio" name="med_evacuation" value="terrestre" onchange="updateMedical()"> Viatura terrestre</label>
+          <label><input type="radio" name="med_evacuation" value="asa_fixa" onchange="updateMedical()"> Aeronave de asa fixa</label>
+          <label><input type="radio" name="med_evacuation" value="asa_rotativa" onchange="updateMedical()"> Aeronave de asa rotativa</label>
+          <label><input type="radio" name="med_evacuation" value="outro" onchange="updateMedical()"> Outro: <input type="text" id="med_outro_evacuation" style="width:120px; padding:4px; border:1px solid var(--border); border-radius:4px;" placeholder="especificar"></label>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="margin-top:24px; margin-bottom:12px;">Unidade de Saúde de Destino em Caso de Emergência</h3>
+    <div style="display:grid; gap:10px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <input type="text" id="med_hospital_name" placeholder="Nome da unidade" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+        <input type="text" id="med_hospital_city" placeholder="Município" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+      </div>
+      <input type="text" id="med_hospital_address" placeholder="Endereço" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+      <input type="text" id="med_hospital_coords" placeholder="Coordenadas (Lat/Long)" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+        <input type="tel" id="med_hospital_phone" placeholder="Contato: (__) 9____-____" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+        <input type="text" id="med_hospital_distance" placeholder="Distância (km)" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+      </div>
+      <input type="text" id="med_hospital_time" placeholder="Tempo estimado (h:min)" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:24px;">
+      <button class="btn btn-primary" onclick="saveSafety()"><i data-lucide="save"></i> Salvar Segurança e Saúde</button>
+      <a class="btn btn-secondary" href="workflow.html"><i data-lucide="git-merge"></i> Ver Workflow</a>
+    </div>
+    <div id="sf_lock" class="badge badge-danger" style="display:none; width:fit-content; margin-top:12px;">PO BLOQUEADO (Somente leitura)</div>
   </div>
 </div>
-
 <script>
-function lvl(){ return getIncidentLevel(); }
-function renderHints(){
-  const l = lvl();
-  let txt = '';
-  if(l==='Nível 1'){
-    txt = '• Segurança é recomendada (mesmo que gate não seja obrigatório).<br>• Registre pelo menos perigos e mitigação básica.';
-  }else if(l==='Nível 2'){
-    txt = '• Segurança é <b>obrigatória</b> para aprovação do PO.<br>• Faça briefing curto e objetivo.';
-  }else{
-    txt = '• Segurança é <b>crítica</b>: perigos por setor, controles e monitoramento contínuo.<br>• Registre recomendações e revisões no workflow.';
+const RISKS_DATA = [
+  {id: 'risk_epi', title: 'EQUIPAMENTOS DE PROTEÇÃO INDIVIDUAL (EPI)', text: 'Atenção rigorosa ao uso obrigatório dos Equipamentos de Proteção Individual em todas as fases da operação. Verificar previamente a integridade, ajuste e adequação dos EPIs. O uso correto é condição indispensável para a preservação da integridade física da tropa e mitigação dos riscos operacionais.'},
+  {id: 'risk_transit', title: 'SEGURANÇA NO TRÂNSITO E CONDUÇÃO OPERACIONAL', text: 'Atenção redobrada aos condutores de viaturas e operadores de equipamentos. Respeitar os limites de velocidade, as normas de circulação e as condições do terreno. A condução segura previne acidentes, preserva vidas e assegura a continuidade da missão.'},
+  {id: 'risk_fatiga', title: 'LIMITES FÍSICOS, FADIGA E HIDRATAÇÃO', text: 'Atenção contínua à hidratação, alimentação, sinais de fadiga, estresse térmico e exaustão física. A guarnição deve manter vigilância mútua, identificar precocemente sinais de sobrecarga e comunicar imediatamente ao comando para adoção das medidas cabíveis.'},
+  {id: 'risk_alcohol', title: 'PROIBIÇÃO DE USO DE ÁLCOOL E SUBSTÂNCIAS PSICOATIVAS', text: 'Atenção à proibição expressa e absoluta do consumo de bebidas alcoólicas e/ou quaisquer substâncias que comprometam a capacidade física e mental durante toda a operação. O descumprimento coloca em risco a segurança individual, coletiva e o sucesso da missão.'},
+  {id: 'risk_fauna', title: 'ANIMAIS PEÇONHENTOS E FAUNA SILVESTRE', text: 'Atenção ao risco permanente de acidentes com animais peçonhentos. Evitar tocar em troncos, pedras, buracos e vegetação densa sem inspeção prévia com os membros desprotegidos. Manter atenção constante ao deslocamento, utilizar corretamente os EPIs e, em caso de incidente, comunicar imediatamente ao comando e seguir os protocolos de atendimento e evacuação.'},
+  {id: 'risk_situational', title: 'CONSCIÊNCIA SITUACIONAL E COMPORTAMENTO DO FOGO', text: 'Manter monitoramento contínuo do comportamento do fogo, das condições meteorológicas e do relevo. Qualquer mudança que represente risco deve ser imediatamente comunicada à guarnição e a chefia imediata. As operações devem iniciar e evoluir sempre a partir de pontos de ancoragem seguros.'},
+  {id: 'risk_escape', title: 'ROTAS DE FUGA', text: 'Definir previamente rotas de fuga principais e alternativas, mantendo-as desobstruídas, sinalizadas e conhecidas por todos. As rotas devem ser constantemente reavaliadas e atualizadas conforme a evolução do incêndio e das condições operacionais.'},
+  {id: 'risk_zones', title: 'ZONAS DE SEGURANÇA', text: 'Identificar e divulgar previamente as zonas de segurança, assegurando que todos conheçam sua localização durante as operações. As zonas devem estar livres de combustível, com descontinuidade de vegetação suficiente para garantir proteção contra calor radiante em emergências, a área queimada geralmente é a opção mais simples.'},
+  {id: 'risk_accidents', title: 'ACIDENTES GERAIS (QUEDAS, COLISÕES E IMPACTOS)', text: 'Atenção aos riscos de escorregões, quedas, colisões e impactos durante deslocamentos a pé ou motorizados. Redobrar a atenção em terrenos irregulares, com baixa visibilidade ou presença de obstáculos naturais e artificiais.'},
+  {id: 'risk_tools', title: 'USO SEGURO DE FERRAMENTAS E EQUIPAMENTOS', text: 'Atenção ao manuseio de ferramentas manuais e equipamentos motomecanizados, principalmente os perfuro cortantes. Realizar inspeção prévia, manter distância segura entre operadores e interromper imediatamente qualquer prática insegura ou fora do padrão técnico.'},
+  {id: 'risk_smoke', title: 'INTOXICAÇÃO POR FUMAÇA E GASES', text: 'Atenção ao risco de inalação de fumaça e gases tóxicos. Posicionar-se sempre no sentido contrário ao deslocamento da fumaça, utilizar balaclava e óculos de proteção e observar sinais de intoxicação, comunicando prontamente ao comando.'},
+  {id: 'risk_burns', title: 'QUEIMADURAS E EXPOSIÇÃO AO CALOR', text: 'Atenção à proximidade excessiva das chamas, brasas e superfícies aquecidas. Respeitar as técnicas de combate, manter rotas de fuga ativas e utilizar corretamente os EPIs resistentes ao calor.'}
+];
+
+function renderRisks(){
+  const container = document.getElementById('risks_container');
+  if(!container) return;
+  
+  container.innerHTML = RISKS_DATA.map(risk => `
+    <div class="risk-card" id="card_${risk.id}" style="border:2px solid var(--border); padding:16px; border-radius:10px; background:#ffffff02; transition:all 0.2s; cursor:pointer;" onclick="toggleRisk('${risk.id}')">
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="flex-shrink:0;">
+          <input type="checkbox" id="${risk.id}" class="risk-checkbox" onchange="updateRisks()" style="width:22px; height:22px; cursor:pointer; margin-top:2px;">
+        </div>
+        <div style="flex:1;">
+          <strong style="display:block; margin-bottom:10px; font-size:14px; text-transform:uppercase; letter-spacing:0.5px; color:var(--text);">${risk.title}</strong>
+          <div style="padding:12px; background:#00000020; border-radius:6px; border-left:4px solid var(--brand); font-size:14px; line-height:1.6; font-style:italic; color:var(--text);">
+            "${risk.text}"
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addNewRiskMessage(){
+  const title = document.getElementById('new_risk_title')?.value.trim();
+  const msg = document.getElementById('new_risk_msg')?.value.trim();
+  
+  if(!title || !msg) {
+    ARGOS.toast('Preencha título e mensagem.');
+    return;
   }
-  sf_hint.innerHTML = txt;
+  
+  // Verificar duplicata
+  if(RISKS_DATA.find(r => r.title.toLowerCase() === title.toLowerCase())) {
+    ARGOS.toast('Esta mensagem já existe.');
+    return;
+  }
+  
+  // Adicionar ao array
+  const newId = `risk_custom_${Date.now()}`;
+  RISKS_DATA.push({id: newId, title, text: msg});
+  
+  // Salvar no localStorage
+  const customRisks = Store.get('custom_risks', []);
+  customRisks.push({id: newId, title, text: msg});
+  Store.set('custom_risks', customRisks);
+  
+  // Limpar inputs
+  document.getElementById('new_risk_title').value = '';
+  document.getElementById('new_risk_msg').value = '';
+  
+  // Re-renderizar
+  renderRisks();
+  ARGOS.toast('Mensagem de segurança adicionada com sucesso!');
 }
+
+function loadCustomRisks(){
+  const customRisks = Store.get('custom_risks', []);
+  if(customRisks.length > 0) {
+    RISKS_DATA.push(...customRisks);
+  }
+}
+
+// --- RISCOS DA OPERAÇÃO (mesmas funções que em operacoes.html) ---
+const RISKS_DATA_OPS = [
+  {id: 'risk_epi', title: 'EQUIPAMENTOS DE PROTEÇÃO INDIVIDUAL (EPI)', text: 'Atenção rigorosa ao uso obrigatório dos Equipamentos de Proteção Individual em todas as fases da operação. Verificar previamente a integridade, ajuste e adequação dos EPIs. O uso correto é condição indispensável para a preservação da integridade física da tropa e mitigação dos riscos operacionais.'},
+  {id: 'risk_transit', title: 'SEGURANÇA NO TRÂNSITO E CONDUÇÃO OPERACIONAL', text: 'Atenção redobrada aos condutores de viaturas e operadores de equipamentos. Respeitar os limites de velocidade, as normas de circulação e as condições do terreno. A condução segura previne acidentes, preserva vidas e assegura a continuidade da missão.'},
+  {id: 'risk_fatiga', title: 'LIMITES FÍSICOS, FADIGA E HIDRATAÇÃO', text: 'Atenção contínua à hidratação, alimentação, sinais de fadiga, estresse térmico e exaustão física. A guarnição deve manter vigilância mútua, identificar precocemente sinais de sobrecarga e comunicar imediatamente ao comando para adoção das medidas cabíveis.'},
+  {id: 'risk_alcohol', title: 'PROIBIÇÃO DE USO DE ÁLCOOL E SUBSTÂNCIAS PSICOATIVAS', text: 'Atenção à proibição expressa e absoluta do consumo de bebidas alcoólicas e/ou quaisquer substâncias que comprometam a capacidade física e mental durante toda a operação. O descumprimento coloca em risco a segurança individual, coletiva e o sucesso da missão.'},
+  {id: 'risk_fauna', title: 'ANIMAIS PEÇONHENTOS E FAUNA SILVESTRE', text: 'Atenção ao risco permanente de acidentes com animais peçonhentos. Evitar tocar em troncos, pedras, buracos e vegetação densa sem inspeção prévia com os membros desprotegidos. Manter atenção constante ao deslocamento, utilizar corretamente os EPIs e, em caso de incidente, comunicar imediatamente ao comando e seguir os protocolos de atendimento e evacuação.'},
+  {id: 'risk_situational', title: 'CONSCIÊNCIA SITUACIONAL E COMPORTAMENTO DO FOGO', text: 'Manter monitoramento contínuo do comportamento do fogo, das condições meteorológicas e do relevo. Qualquer mudança que represente risco deve ser imediatamente comunicada à guarnição e a chefia imediata. As operações devem iniciar e evoluir sempre a partir de pontos de ancoragem seguros.'},  {id: 'risk_escape', title: 'ROTAS DE FUGA', text: 'Definir previamente rotas de fuga principais e alternativas, mantendo-as desobstruídas, sinalizadas e conhecidas por todos. As rotas devem ser constantemente reavaliadas e atualizadas conforme a evolução do incêndio e das condições operacionais.'},
+  {id: 'risk_zones', title: 'ZONAS DE SEGURANÇA', text: 'Identificar e divulgar previamente as zonas de segurança, assegurando que todos conheçam sua localização durante as operações. As zonas devem estar livres de combustível, com descontinuidade de vegetação suficiente para garantir proteção contra calor radiante em emergências, a área queimada geralmente é a opção mais simples.'},
+  {id: 'risk_accidents', title: 'ACIDENTES GERAIS (QUEDAS, COLISÕES E IMPACTOS)', text: 'Atenção aos riscos de escorregões, quedas, colisões e impactos durante deslocamentos a pé ou motorizados. Redobrar a atenção em terrenos irregulares, com baixa visibilidade ou presença de obstáculos naturais e artificiais.'},
+  {id: 'risk_tools', title: 'USO SEGURO DE FERRAMENTAS E EQUIPAMENTOS', text: 'Atenção ao manuseio de ferramentas manuais e equipamentos motomecanizados, principalmente os perfuro cortantes. Realizar inspeção prévia, manter distância segura entre operadores e interromper imediatamente qualquer prática insegura ou fora do padrão técnico.'},
+  {id: 'risk_smoke', title: 'INTOXICAÇÃO POR FUMAÇA E GASES', text: 'Atenção ao risco de inalação de fumaça e gases tóxicos. Posicionar-se sempre no sentido contrário ao deslocamento da fumaça, utilizar balaclava e óculos de proteção e observar sinais de intoxicação, comunicando prontamente ao comando.'},
+  {id: 'risk_burns', title: 'QUEIMADURAS E EXPOSIÇÃO AO CALOR', text: 'Atenção à proximidade excessiva das chamas, brasas e superfícies aquecidas. Respeitar as técnicas de combate, manter rotas de fuga ativas e utilizar corretamente os EPIs resistentes ao calor.'}
+];
+
+function renderRisksOps(){
+  const container = document.getElementById('risks_ops_container');
+  if(!container) return;
+  container.innerHTML = RISKS_DATA_OPS.map(r => `
+    <div style="border:1px solid var(--border); padding:12px; border-radius:8px; background:#ffffff02; display:flex; gap:12px; align-items:flex-start;">
+      <div style="flex-shrink:0;"><input type="checkbox" id="ops_${r.id}" style="width:20px; height:20px; cursor:pointer;" onchange="updateRisksOps()"></div>
+      <div style="flex:1;">
+        <strong style="display:block; margin-bottom:8px; font-size:13px;">${r.title}</strong>
+        <div style="font-size:13px; color:var(--muted); padding:10px; background:#00000008; border-radius:6px;">${r.text}</div>
+      </div>
+    </div>
+  `).join('');
+  // restore saved: prefer specific operations key, fallback to global safety_risks
+  const savedOps = Store.get('operations_safety_risks', []);
+  const safetyGlobal = Store.get('safety_risks', {});
+  const source = (Array.isArray(savedOps) && savedOps.length) ? savedOps : (Array.isArray(safetyGlobal.risks) ? safetyGlobal.risks : []);
+  if(source && Array.isArray(source)){
+    RISKS_DATA_OPS.forEach(r => {
+      const el = document.getElementById(`ops_${r.id}`);
+      if(el) el.checked = source.includes(r.title);
+    });
+    // keep operations key in sync if fallback was used
+    if(!savedOps.length && source.length){ Store.set('operations_safety_risks', source); }
+  }
+}
+
+function updateRisksOps(){
+  const selected = RISKS_DATA_OPS.filter(r => document.getElementById(`ops_${r.id}`)?.checked);
+  const titles = selected.map(r => r.title);
+  Store.set('operations_safety_risks', titles);
+  
+  // Atualizar contador
+  const countBadge = document.getElementById('risks_ops_count');
+  if(countBadge) {
+    countBadge.textContent = `${selected.length} selecionado${selected.length !== 1 ? 's' : ''}`;
+  }
+  
+  // Atualizar evidências também
+  const evidenceHtml = selected.map(r => `
+    <div style="padding:14px; background:#ffffff08; border-radius:8px; border-left:4px solid var(--brand); font-size:13px; border:1px solid var(--border); line-height:1.7;">
+      <strong style="display:block; margin-bottom:10px; text-transform:uppercase; font-size:12px; letter-spacing:0.5px; color:var(--brand);">${r.title}</strong>
+      <div class="muted" style="line-height:1.7; font-style:italic; font-size:13px;">"${r.text}"</div>
+    </div>
+  `).join('');
+  
+  if(evidenceHtml) {
+    document.getElementById('evidence_list').innerHTML = evidenceHtml;
+  } else {
+    document.getElementById('evidence_list').innerHTML = '<div class="muted" style="padding:14px; text-align:center; font-size:13px;">Nenhum risco selecionado.</div>';
+  }
+}
+
+function toggleRisksOpsGroup(){
+  const group = document.getElementById('risks_ops_group');
+  const icon = document.getElementById('risks_ops_toggle_icon');
+  if(group.style.display === 'none' || group.style.display === '') {
+    group.style.display = 'grid';
+    icon.style.transform = 'rotate(0deg)';
+  } else {
+    group.style.display = 'none';
+    icon.style.transform = 'rotate(-90deg)';
+  }
+}
+
+function saveRisksOps(){
+  updateRisksOps();
+  // também sincronizar para a chave usada por seguranca.html
+  const selected = Store.get('operations_safety_risks', []);
+  const payload = { risks: Array.isArray(selected) ? selected : [], custom_risk: null, updated_at: new Date().toISOString() };
+  Store.set('safety_risks', payload);
+  ARGOS.toast('Riscos selecionados salvos em Operações e sincronizados com Segurança.');
+}
+
+function clearRisksOps(){
+  RISKS_DATA_OPS.forEach(r => { const el = document.getElementById(`ops_${r.id}`); if(el) el.checked=false; });
+  updateRisksOps();
+  // limpar também evidências globais
+  Store.set('safety_risks', { risks: [], custom_risk: null, updated_at: new Date().toISOString() });
+}
+
+function updateMedical(){
+  const med = {
+    ambulancia: document.getElementById('med_ambulancia')?.checked || false,
+    equipe_saude: document.getElementById('med_equipe')?.checked || false,
+    medico: document.getElementById('med_medico')?.checked || false,
+    modo_evacuation: document.querySelector('input[name="med_evacuation"]:checked')?.value || '',
+    outro_evacuation: document.getElementById('med_outro_evacuation')?.value || '',
+    hospital_name: document.getElementById('med_hospital_name')?.value || '',
+    hospital_city: document.getElementById('med_hospital_city')?.value || '',
+    hospital_address: document.getElementById('med_hospital_address')?.value || '',
+    hospital_coords: document.getElementById('med_hospital_coords')?.value || '',
+    hospital_phone: document.getElementById('med_hospital_phone')?.value || '',
+    hospital_distance: document.getElementById('med_hospital_distance')?.value || '',
+    hospital_time: document.getElementById('med_hospital_time')?.value || '',
+    updated_at: new Date().toISOString()
+  };
+  Store.set('safety_medical', med);
+}
+
 function load(){
-  const d = Store.get('safety_form', {});
-  sf_haz.value = d.haz || '';
-  sf_mit.value = d.mit || '';
-  sf_msg.value = d.msg || '';
+  loadCustomRisks();
+  renderRisksOps(); // render riscos da operação (sincronizado com operacoes.html)
+  
+  // Carregar riscos
+  const risks = Store.get('safety_risks', {});
+  if(risks.risks && Array.isArray(risks.risks)){
+    RISKS_DATA.forEach(r => {
+      const el = document.getElementById(r.id);
+      if(el && risks.risks.includes(r.title)){
+        el.checked = true;
+      }
+    });
+  }
+
+  // Carregar dados médicos
+  const med = Store.get('safety_medical', {});
+  if(document.getElementById('med_ambulancia')) document.getElementById('med_ambulancia').checked = med.ambulancia || false;
+  if(document.getElementById('med_equipe')) document.getElementById('med_equipe').checked = med.equipe_saude || false;
+  if(document.getElementById('med_medico')) document.getElementById('med_medico').checked = med.medico || false;
+  if(med.modo_evacuation){
+    const radio = document.querySelector(`input[name="med_evacuation"][value="${med.modo_evacuation}"]`);
+    if(radio) radio.checked = true;
+  }
+  if(document.getElementById('med_outro_evacuation')) document.getElementById('med_outro_evacuation').value = med.outro_evacuation || '';
+  if(document.getElementById('med_hospital_name')) document.getElementById('med_hospital_name').value = med.hospital_name || '';
+  if(document.getElementById('med_hospital_city')) document.getElementById('med_hospital_city').value = med.hospital_city || '';
+  if(document.getElementById('med_hospital_address')) document.getElementById('med_hospital_address').value = med.hospital_address || '';
+  if(document.getElementById('med_hospital_coords')) document.getElementById('med_hospital_coords').value = med.hospital_coords || '';
+  if(document.getElementById('med_hospital_phone')) document.getElementById('med_hospital_phone').value = med.hospital_phone || '';
+  if(document.getElementById('med_hospital_distance')) document.getElementById('med_hospital_distance').value = med.hospital_distance || '';
+  if(document.getElementById('med_hospital_time')) document.getElementById('med_hospital_time').value = med.hospital_time || '';
+  
+  // Atualizar evidências
+  updateRisks();
 }
+
 function saveSafety(){
   if(isLocked()){ ARGOS.toast('PO bloqueado.'); return; }
-  const payload = {haz: sf_haz.value.trim(), mit: sf_mit.value.trim(), msg: sf_msg.value.trim(), updated_at: new Date().toISOString()};
-  Store.set('safety_form', payload);
+  updateRisks();
+  updateMedical();
   markProgress('safety', true);
-  WF.bumpVersion('Segurança atualizada');
-  ARGOS.toast('Segurança salva e gate marcado.');
+  WF.bumpVersion('Segurança e Plano Médico atualizado');
+  ARGOS.toast('Segurança e Saúde salva e gate marcado.');
 }
+
 function applyLock(){
   if(isLocked()){
-    document.querySelectorAll('textarea, button.btn-primary').forEach(el=>el.disabled=true);
-    sf_lock.style.display='inline-block';
+    document.querySelectorAll('input, textarea, button.btn-primary').forEach(el=>el.disabled=true);
+    document.getElementById('sf_lock').style.display='inline-block';
     ARGOS.toast('PO bloqueado: somente leitura.');
   }
 }
-document.addEventListener('DOMContentLoaded', ()=>{ load(); renderHints(); applyLock(); });
+
+document.addEventListener('DOMContentLoaded', ()=>{ load(); applyLock(); });
 </script>
 </section>
     </div>

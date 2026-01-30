@@ -50,103 +50,337 @@
             </div>
         </header>
         <section class="content">
-<div class="grid cols-2">
+<div class="grid cols-1">
   <div class="card">
-    <h2><i data-lucide="wallet"></i> Administração / Finanças</h2>
-    <p class="muted">Registro de custos, horas e despesas. Em Nível 1 pode ser opcional; em Nível 3 é essencial.</p>
+    <h2><i data-lucide="wallet"></i> Cadastro de Recursos</h2>
+    <p class="muted">Registre doações de materiais e recursos financeiros utilizados na operação.</p>
 
-    <div style="display:grid; gap:12px;">
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+    <div style="display:grid; gap:16px; margin-top:16px;">
+      <!-- CHECKBOX: HOUVE DOAÇÕES? -->
+      <div style="padding:14px; background:#ffffff05; border-radius:8px; border:1px solid var(--border); border-left:3px solid var(--brand);">
+        <label style="display:flex; gap:10px; align-items:center; cursor:pointer;">
+          <input type="checkbox" id="has_donations" onchange="toggleDonationsSection()" style="width:20px; height:20px; cursor:pointer;">
+          <div style="flex:1;">
+            <strong style="font-size:14px;">Houve Doações de Recursos (Materiais ou Financeiras)?</strong>
+            <p class="muted" style="margin:6px 0 0 0; font-size:12px;">Marque para registrar recursos doados utilizados na operação.</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- SEÇÃO DE DOAÇÕES - INICIALMENTE OCULTA -->
+      <div id="donations_section" style="display:none;">
+        <!-- DATA DA DOAÇÃO -->
         <div>
-          <label>Horas de Equipe (resumo)</label>
-          <textarea id="ad_hours" rows="4" placeholder="Ex.: GUA-01 06h, GUA-05 04h..."></textarea>
+          <label><strong>Data da Doação (dd/mm/aaaa)</strong></label>
+          <input type="text" id="ad_donation_date" placeholder="dd/mm/aaaa" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:150px;">
         </div>
+
+        <!-- RESPONSÁVEL PELA DOAÇÃO -->
         <div>
-          <label>Custos / Despesas</label>
-          <textarea id="ad_costs" rows="4" placeholder="Combustível, alimentação, manutenção, diárias..."></textarea>
+          <label style="display:block; margin-bottom:8px;"><strong>Responsável pela Doação</strong></label>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:8px;">
+            <input type="text" id="ad_donor_name" placeholder="Nome" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+            <input type="text" id="ad_donor_cpf" placeholder="CPF/CNPJ" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <input type="tel" id="ad_donor_phone" placeholder="Telefone: (__) 9____-____" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+            <textarea id="ad_donor_obs" placeholder="Demais dados relevantes" rows="2" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); resize:vertical;"></textarea>
+          </div>
         </div>
-      </div>
-      <div>
-        <label>Contratos / Apoio Externo (se houver)</label>
-        <textarea id="ad_contracts" rows="3" placeholder="Ex.: empresa X - caminhão pipa - OS nº..."></textarea>
-      </div>
-      <div>
-        <label>Observações / Evidências</label>
-        <textarea id="ad_notes" rows="3" placeholder="Notas fiscais, autorização, registros..."></textarea>
-      </div>
 
-      <div style="display:flex; gap:10px;">
-        <button class="btn btn-primary" onclick="saveAdm()"><i data-lucide="save"></i> Salvar Adm/Fin</button>
-        <a class="btn btn-secondary" href="workflow.html"><i data-lucide="git-merge"></i> Ver Workflow</a>
-      </div>
-      <div id="ad_lock" class="badge badge-danger" style="display:none; width:fit-content;">PO BLOQUEADO (Somente leitura)</div>
+        <!-- CATEGORIA DO RECURSO: MATERIAL -->
+        <div style="margin-top:16px;">
+          <label style="display:block; margin-bottom:8px;"><strong>Materiais Doados</strong></label>
+          <button class="btn btn-secondary" onclick="addMaterial()" style="margin-bottom:12px;"><i data-lucide="plus"></i> Adicionar Material</button>
+          <div id="ad_materials_list" style="display:grid; gap:12px;"></div>
+        </div>
 
-      <div style="margin-top:6px; padding:12px; border:1px dashed var(--border); border-radius:12px; background:#ffffff05;">
-        <div class="stat-label">REGRA DINÂMICA</div>
-        <div class="muted" style="font-size:13px; margin-top:6px; line-height:1.4">
-          • Em <b>Nível 1</b>, Adm/Fin pode ficar “pendente” sem impedir revisão/aprovação.<br>
-          • Em <b>Nível 3</b>, recomenda-se marcar este gate como OK antes da aprovação.
+        <!-- CATEGORIA DO RECURSO: FINANCEIRO -->
+        <div style="margin-top:16px;">
+          <label style="display:block; margin-bottom:8px;"><strong>Doações Financeiras</strong></label>
+          <button class="btn btn-secondary" onclick="addDonation()" style="margin-bottom:12px;"><i data-lucide="plus"></i> Adicionar Doação Financeira</button>
+          <div id="ad_donations_list" style="display:grid; gap:12px;"></div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="card">
-    <h2><i data-lucide="info"></i> Orientação por Nível</h2>
-    <div id="ad_hint" class="muted" style="font-size:13px; line-height:1.5;"></div>
+    <h3 style="margin-top:24px; margin-bottom:12px;">Registros de Incidentes</h3>
+    <div style="display:grid; gap:16px;">
+      <!-- ACIDENTES COM PESSOAL -->
+      <div style="border:2px solid var(--border); padding:16px; border-radius:10px; background:#ffffff02; transition:all 0.2s;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <label style="display:flex; gap:10px; align-items:center; cursor:pointer; margin:0; flex:1;">
+            <input type="checkbox" id="acc_personnel" onchange="toggleAccidentSection('personnel')" style="width:20px; height:20px; cursor:pointer;"> 
+            <strong style="font-size:14px;">Acidentes com Pessoal</strong>
+          </label>
+        </div>
+        <div id="acc_personnel_form" style="display:none; display:grid; gap:12px; padding-top:12px; border-top:1px solid var(--border);">
+          <input type="text" placeholder="Nome Completo do acidentado" class="ad_personnel" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+          <input type="text" placeholder="Causa" class="ad_personnel" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+          <input type="text" placeholder="Data do acidente (dd/mm/aaaa)" class="ad_personnel" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+        </div>
+      </div>
+
+      <!-- ACIDENTES COM MATERIAL -->
+      <div style="border:2px solid var(--border); padding:16px; border-radius:10px; background:#ffffff02; transition:all 0.2s;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <label style="display:flex; gap:10px; align-items:center; cursor:pointer; margin:0; flex:1;">
+            <input type="checkbox" id="acc_material" onchange="toggleAccidentSection('material')" style="width:20px; height:20px; cursor:pointer;"> 
+            <strong style="font-size:14px;">Acidentes com Material</strong>
+          </label>
+        </div>
+        <div id="acc_material_form" style="display:none; display:grid; gap:12px; padding-top:12px; border-top:1px solid var(--border);">
+          <input type="text" placeholder="Descrição do material/equipamento" class="ad_material" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+          <input type="text" placeholder="Causa" class="ad_material" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+          <input type="text" placeholder="Data do acidente (dd/mm/aaaa)" class="ad_material" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+        </div>
+      </div>
+
+      <!-- OUTROS ACIDENTES -->
+      <div style="border:2px solid var(--border); padding:16px; border-radius:10px; background:#ffffff02; transition:all 0.2s;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+          <label style="display:flex; gap:10px; align-items:center; cursor:pointer; margin:0; flex:1;">
+            <input type="checkbox" id="acc_other" onchange="toggleAccidentSection('other')" style="width:20px; height:20px; cursor:pointer;"> 
+            <strong style="font-size:14px;">Outros Incidentes Relevantes</strong>
+          </label>
+        </div>
+        <div id="acc_other_form" style="display:none; display:grid; gap:12px; padding-top:12px; border-top:1px solid var(--border);">
+          <input type="text" placeholder="Descrição do incidente" class="ad_other" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+          <input type="text" placeholder="Causa" class="ad_other" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+          <input type="text" placeholder="Data do acidente (dd/mm/aaaa)" class="ad_other" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:24px;">
+      <button class="btn btn-primary" onclick="saveAdmFin()"><i data-lucide="save"></i> Salvar Adm/Fin</button>
+      <a class="btn btn-secondary" href="workflow.html"><i data-lucide="git-merge"></i> Ver Workflow</a>
+    </div>
+    <div id="ad_lock" class="badge badge-danger" style="display:none; width:fit-content; margin-top:12px;">PO BLOQUEADO (Somente leitura)</div>
+
   </div>
 </div>
 
 <script>
-function lvl(){ return (Store.get('argos_inc', ARGOS.inc||{})?.level)||'Nível 2'; }
+let materialsArray = [];
+let donationsArray = [];
 
-function renderHints(){
-  const l = lvl();
-  let txt = '';
-  if(l==='Nível 1'){
-    txt = '• Mantenha um resumo simples: horas e gastos principais.<br>• Registre o mínimo para rastreabilidade.';
-  }else if(l==='Nível 2'){
-    txt = '• Registre horas por equipe/viatura e custos de logística.<br>• Ajuda na tomada de decisão e prestação de contas.';
-  }else{
-    txt = '• Controle detalhado de custos e contratos é crítico.<br>• Prepare evidências para auditoria e relatórios pós-incidente.';
+function addMaterial(){
+  const id = Date.now();
+  const html = `
+    <div id="mat_${id}" style="border:1px solid var(--border); padding:12px; border-radius:8px; background:#ffffff02;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+        <strong>Material</strong>
+        <button class="btn" style="padding:4px 8px; font-size:12px;" onclick="removeMaterial(${id})"><i data-lucide="trash"></i></button>
+      </div>
+      <input type="text" placeholder="Descrição" class="mat_desc_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; margin-bottom:8px;">
+      <input type="text" placeholder="Marca" class="mat_brand_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; margin-bottom:8px;">
+      <input type="text" placeholder="Modelo" class="mat_model_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; margin-bottom:8px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+        <input type="text" placeholder="Valor estimado" class="mat_value_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+        <input type="text" placeholder="Quantidade" class="mat_qty_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+      </div>
+      <input type="text" placeholder="Arquivo (PDF, JPG, PNG)" class="mat_file_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%;">
+    </div>
+  `;
+  document.getElementById('ad_materials_list').insertAdjacentHTML('beforeend', html);
+  materialsArray.push(id);
+}
+
+function removeMaterial(id){
+  document.getElementById(`mat_${id}`)?.remove();
+  materialsArray = materialsArray.filter(m => m !== id);
+}
+
+function addDonation(){
+  const id = Date.now();
+  const html = `
+    <div id="don_${id}" style="border:1px solid var(--border); padding:12px; border-radius:8px; background:#ffffff02;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+        <strong>Doação Financeira</strong>
+        <button class="btn" style="padding:4px 8px; font-size:12px;" onclick="removeDonation(${id})"><i data-lucide="trash"></i></button>
+      </div>
+      <input type="text" placeholder="Valor total" class="don_value_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; margin-bottom:8px;">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+        <input type="text" placeholder="Conta de origem" class="don_from_account_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+        <input type="text" placeholder="Instituição de origem" class="don_from_bank_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+        <input type="text" placeholder="Conta de destino" class="don_to_account_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+        <input type="text" placeholder="Instituição de destino" class="don_to_bank_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px;">
+        <input type="text" placeholder="Nome do recebedor" class="don_receiver_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+        <input type="text" placeholder="CPF/CNPJ do recebedor" class="don_receiver_doc_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+      </div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <select class="don_currency_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+          <option value="BRL">Real (BRL)</option>
+          <option value="USD">Dólar (USD)</option>
+          <option value="EUR">Euro (EUR)</option>
+          <option value="OTHER">Outra</option>
+        </select>
+        <input type="text" placeholder="Comprovante (arquivo)" class="don_proof_${id}" style="padding:8px; border:1px solid var(--border); border-radius:6px; background:var(--surface);">
+      </div>
+    </div>
+  `;
+  document.getElementById('ad_donations_list').insertAdjacentHTML('beforeend', html);
+  donationsArray.push(id);
+}
+
+function removeDonation(id){
+  document.getElementById(`don_${id}`)?.remove();
+  donationsArray = donationsArray.filter(d => d !== id);
+}
+
+function toggleDonationsSection(){
+  const checkbox = document.getElementById('has_donations');
+  const section = document.getElementById('donations_section');
+  if(checkbox && section) {
+    section.style.display = checkbox.checked ? 'grid' : 'none';
+    if(!checkbox.checked) {
+      // Limpar dados quando deschecked
+      document.getElementById('ad_donation_date').value = '';
+      document.getElementById('ad_donor_name').value = '';
+      document.getElementById('ad_donor_cpf').value = '';
+      document.getElementById('ad_donor_phone').value = '';
+      document.getElementById('ad_donor_obs').value = '';
+      document.getElementById('ad_materials_list').innerHTML = '';
+      document.getElementById('ad_donations_list').innerHTML = '';
+      materialsArray = [];
+      donationsArray = [];
+    }
   }
-  document.getElementById('ad_hint').innerHTML = txt;
 }
 
-function load(){
-  const d = Store.get('adm_form', {});
-  ad_hours.value = d.hours || '';
-  ad_costs.value = d.costs || '';
-  ad_contracts.value = d.contracts || '';
-  ad_notes.value = d.notes || '';
+function toggleAccidentSection(type){
+  const checkbox = document.getElementById(`acc_${type}`);
+  const form = document.getElementById(`acc_${type}_form`);
+  if(checkbox && form){
+    form.style.display = checkbox.checked ? 'grid' : 'none';
+  }
 }
 
-function saveAdm(){
+function collectMaterials(){
+  return materialsArray.map(id => ({
+    descricao: document.querySelector(`.mat_desc_${id}`)?.value || '',
+    marca: document.querySelector(`.mat_brand_${id}`)?.value || '',
+    modelo: document.querySelector(`.mat_model_${id}`)?.value || '',
+    valor_estimado: document.querySelector(`.mat_value_${id}`)?.value || '',
+    quantidade: document.querySelector(`.mat_qty_${id}`)?.value || '',
+    arquivo: document.querySelector(`.mat_file_${id}`)?.value || ''
+  }));
+}
+
+function collectDonations(){
+  return donationsArray.map(id => ({
+    valor_total: document.querySelector(`.don_value_${id}`)?.value || '',
+    conta_origem: document.querySelector(`.don_from_account_${id}`)?.value || '',
+    instituicao_origem: document.querySelector(`.don_from_bank_${id}`)?.value || '',
+    conta_destino: document.querySelector(`.don_to_account_${id}`)?.value || '',
+    instituicao_destino: document.querySelector(`.don_to_bank_${id}`)?.value || '',
+    nome_recebedor: document.querySelector(`.don_receiver_${id}`)?.value || '',
+    doc_recebedor: document.querySelector(`.don_receiver_doc_${id}`)?.value || '',
+    moeda: document.querySelector(`.don_currency_${id}`)?.value || 'BRL',
+    comprovante: document.querySelector(`.don_proof_${id}`)?.value || ''
+  }));
+}
+
+function collectAccidents(){
+  const accidents = {};
+  
+  const personnel_check = document.getElementById('acc_personnel')?.checked;
+  if(personnel_check){
+    const fields = document.querySelectorAll('.ad_personnel');
+    accidents.pessoal = {
+      nome: fields[0]?.value || '',
+      causa: fields[1]?.value || '',
+      data: fields[2]?.value || ''
+    };
+  }
+  
+  const material_check = document.getElementById('acc_material')?.checked;
+  if(material_check){
+    const fields = document.querySelectorAll('.ad_material');
+    accidents.material = {
+      descricao: fields[0]?.value || '',
+      causa: fields[1]?.value || '',
+      data: fields[2]?.value || ''
+    };
+  }
+  
+  const other_check = document.getElementById('acc_other')?.checked;
+  if(other_check){
+    const fields = document.querySelectorAll('.ad_other');
+    accidents.outro = {
+      descricao: fields[0]?.value || '',
+      causa: fields[1]?.value || '',
+      data: fields[2]?.value || ''
+    };
+  }
+  
+  return accidents;
+}
+
+function saveAdmFin(){
   if(isLocked()){ ARGOS.toast('PO bloqueado.'); return; }
+  
   const payload = {
-    hours: ad_hours.value.trim(),
-    costs: ad_costs.value.trim(),
-    contracts: ad_contracts.value.trim(),
-    notes: ad_notes.value.trim(),
+    data_doacao: document.getElementById('ad_donation_date')?.value || '',
+    responsavel: {
+      nome: document.getElementById('ad_donor_name')?.value || '',
+      cpf_cnpj: document.getElementById('ad_donor_cpf')?.value || '',
+      telefone: document.getElementById('ad_donor_phone')?.value || '',
+      observacoes: document.getElementById('ad_donor_obs')?.value || ''
+    },
+    materiais: collectMaterials(),
+    doacoes_financeiras: collectDonations(),
+    incidentes: collectAccidents(),
     updated_at: new Date().toISOString()
   };
-  Store.set('adm_form', payload);
-  // Gate adm é "soft" em níveis menores; mas marcamos como feito se tiver algo preenchido
-  const filled = !!(payload.hours || payload.costs || payload.contracts || payload.notes);
-  markProgress('adm', filled);
-  WF.bumpVersion('Adm/Fin atualizado');
-  ARGOS.toast('Adm/Fin salvo.');
+  
+  Store.set('admfin_form', payload);
+  markProgress('adm', true);
+  WF.bumpVersion('Adm/Fin atualizado com Recursos e Incidentes');
+  ARGOS.toast('Adm/Fin salvo com sucesso.');
 }
 
 function applyLock(){
   if(isLocked()){
-    document.querySelectorAll('textarea, button.btn-primary').forEach(el=>el.disabled=true);
+    document.querySelectorAll('input, textarea, button.btn-primary, button.btn-secondary').forEach(el=>el.disabled=true);
     document.getElementById('ad_lock').style.display='inline-block';
     ARGOS.toast('PO bloqueado: somente leitura.');
   }
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{ load(); renderHints(); applyLock(); });
+document.addEventListener('DOMContentLoaded', ()=>{ 
+  // Carregar dados salvos
+  const saved = Store.get('admfin_form', {});
+  
+  // Restaurar checkbox de doações apenas se houver dados
+  if(saved.materiais?.length > 0 || saved.doacoes_financeiras?.length > 0) {
+    document.getElementById('has_donations').checked = true;
+    document.getElementById('donations_section').style.display = 'grid';
+  }
+  
+  // Restaurar checkboxes de acidentes apenas se houver dados
+  if(saved.incidentes?.pessoal && (saved.incidentes.pessoal.nome || saved.incidentes.pessoal.causa || saved.incidentes.pessoal.data)) {
+    document.getElementById('acc_personnel').checked = true;
+    document.getElementById('acc_personnel_form').style.display = 'grid';
+  }
+  
+  if(saved.incidentes?.material && (saved.incidentes.material.descricao || saved.incidentes.material.causa || saved.incidentes.material.data)) {
+    document.getElementById('acc_material').checked = true;
+    document.getElementById('acc_material_form').style.display = 'grid';
+  }
+  
+  if(saved.incidentes?.outro && (saved.incidentes.outro.descricao || saved.incidentes.outro.causa || saved.incidentes.outro.data)) {
+    document.getElementById('acc_other').checked = true;
+    document.getElementById('acc_other_form').style.display = 'grid';
+  }
+  
+  applyLock(); 
+});
 </script>
 </section>
     </div>
