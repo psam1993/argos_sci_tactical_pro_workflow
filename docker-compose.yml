@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  argos-sci:
+    build: .
+    container_name: argos_sci_web
+    ports:
+      - "8083:80"
+    restart: unless-stopped
