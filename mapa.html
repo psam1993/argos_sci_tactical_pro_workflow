@@ -61,6 +61,7 @@
             </select>
             <button class="btn btn-secondary" id="btn_draw_line" onclick="toggleDrawMode('line')" style="display:none;"><i data-lucide="pen-tool"></i> Aceiro</button>
             <button class="btn btn-secondary" id="btn_draw_poly" onclick="toggleDrawMode('polygon')" style="display:none;"><i data-lucide="square"></i> Zona</button>
+            <button class="btn btn-secondary" onclick="editWorkArea()"><i data-lucide="edit"></i> Editar Área</button>
             <button class="btn btn-primary" id="btn_refresh_teams" onclick="loadTeamsFromOps()"><i data-lucide="rotate-cw"></i> Sincronizar Equipes</button>
             <button class="btn btn-secondary" onclick="addNewTeamToMap()"><i data-lucide="plus"></i> Adicionar Equipe em Campo</button>
         </div>
@@ -102,7 +103,7 @@
 <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
 
 <script>
-let mapInstance, teamMarkers = {}, drawMode = null, isDrawing = false, drawnItems = new L.FeatureGroup(), layers = {}, pcMarker;
+let mapInstance, teamMarkers = {}, drawMode = null, isDrawing = false, drawnItems = new L.FeatureGroup(), layers = {}, pcMarker, workAreaCircle;
 
 function initMap(){
   mapInstance = L.map('map').setView([-15.603, -56.096], 14);
@@ -115,14 +116,20 @@ function initMap(){
   layers.satellite.addTo(mapInstance);
   mapInstance.addLayer(drawnItems);
 
-  // Área de Trabalho (VERMELHA)
-  L.circle([-15.604, -56.095], { 
+  // Carregar dados de área de trabalho salvos
+  const mapData = Store.get('map_drawings', {});
+  const workAreaData = mapData.work_area || {lat: -15.604, lng: -56.095, radius: 400};
+  
+  // Área de Trabalho (VERMELHA) - agora editável
+  workAreaCircle = L.circle([workAreaData.lat, workAreaData.lng], { 
     color:'#ef4444', 
     fillColor:'#ef4444', 
     fillOpacity:0.2, 
-    radius:400,
+    radius: workAreaData.radius,
     weight: 2
-  }).addTo(mapInstance).bindPopup('Área de Trabalho - 400m');
+  }).addTo(mapInstance);
+  
+  updateWorkAreaPopup();
 
   // Posto de Comando (AZUL)
   const pcIcon = L.divIcon({
@@ -302,6 +309,165 @@ function renderTeamsList(teamIds){
   document.getElementById('teams_list').innerHTML = html || '<div class="muted">Nenhuma equipe posicionada. Sincronize com Operações.</div>';
 }
 
+function updateWorkAreaPopup(){
+  if(workAreaCircle) {
+    const pos = workAreaCircle.getLatLng();
+    const radius = workAreaCircle.getRadius();
+    workAreaCircle.setPopupContent(`
+      <div>
+        <b>Área de Trabalho</b><br>
+        <small>Lat: ${pos.lat.toFixed(4)}, Lng: ${pos.lng.toFixed(4)}</small><br>
+        <small>Raio: ${radius}m</small><br>
+        <button class="btn btn-secondary" style="font-size:11px; margin-top:8px; width:100%; margin-bottom:4px;" onclick="editWorkArea()">✏️ Editar Área</button>
+        <button class="btn btn-secondary" style="font-size:11px; width:100%;" onclick="changeWorkAreaType()">🔄 Mudar Tipo</button>
+      </div>
+    `);
+    workAreaCircle.bindPopup(`
+      <div>
+        <b>Área de Trabalho</b><br>
+        <small>Lat: ${pos.lat.toFixed(4)}, Lng: ${pos.lng.toFixed(4)}</small><br>
+        <small>Raio: ${radius}m</small><br>
+        <button class="btn btn-secondary" style="font-size:11px; margin-top:8px; width:100%; margin-bottom:4px;" onclick="editWorkArea()">✏️ Editar Área</button>
+        <button class="btn btn-secondary" style="font-size:11px; width:100%;" onclick="changeWorkAreaType()">🔄 Mudar Tipo</button>
+      </div>
+    `);
+  }
+}
+
+function editWorkArea(){
+  // Modal para editar área de trabalho
+  const modal = document.createElement('div');
+  modal.id = 'modal_edit_work_area';
+  modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:10000;';
+  
+  const pos = workAreaCircle.getLatLng();
+  const radius = workAreaCircle.getRadius();
+  
+  const content = document.createElement('div');
+  content.style.cssText = 'background:#1a1a2e; border:1px solid var(--border); border-radius:12px; padding:24px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.5);';
+  
+  content.innerHTML = `
+    <h3 style="margin-top:0; margin-bottom:20px;">Editar Área de Trabalho</h3>
+    
+    <div style="margin-bottom:16px;">
+      <label style="display:block; margin-bottom:8px;"><strong>Latitude</strong></label>
+      <input id="wa_lat" type="number" step="0.0001" value="${pos.lat.toFixed(6)}" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;">
+    </div>
+    
+    <div style="margin-bottom:16px;">
+      <label style="display:block; margin-bottom:8px;"><strong>Longitude</strong></label>
+      <input id="wa_lng" type="number" step="0.0001" value="${pos.lng.toFixed(6)}" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;">
+    </div>
+    
+    <div style="margin-bottom:16px;">
+      <label style="display:block; margin-bottom:8px;"><strong>Raio (metros)</strong></label>
+      <input id="wa_radius" type="number" min="50" step="50" value="${radius}" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;">
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-top:8px;">
+        <button class="btn btn-secondary" style="font-size:11px;" onclick="setWorkAreaRadius(300)">300m</button>
+        <button class="btn btn-secondary" style="font-size:11px;" onclick="setWorkAreaRadius(500)">500m</button>
+        <button class="btn btn-secondary" style="font-size:11px;" onclick="setWorkAreaRadius(1000)">1km</button>
+      </div>
+    </div>
+    
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeModalWorkArea()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveWorkAreaChanges()">Salvar</button>
+    </div>
+  `;
+  
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+}
+
+function setWorkAreaRadius(radius){
+  document.getElementById('wa_radius').value = radius;
+}
+
+function closeModalWorkArea(){
+  const modal = document.getElementById('modal_edit_work_area');
+  if(modal) modal.remove();
+}
+
+function saveWorkAreaChanges(){
+  const lat = parseFloat(document.getElementById('wa_lat').value);
+  const lng = parseFloat(document.getElementById('wa_lng').value);
+  const radius = parseFloat(document.getElementById('wa_radius').value);
+  
+  if(isNaN(lat) || isNaN(lng) || isNaN(radius)) {
+    ARGOS.toast('Valores inválidos.');
+    return;
+  }
+  
+  if(radius < 50) {
+    ARGOS.toast('Raio mínimo: 50m');
+    return;
+  }
+  
+  // Atualizar círculo
+  workAreaCircle.setLatLng([lat, lng]);
+  workAreaCircle.setRadius(radius);
+  
+  // Salvar dados
+  const mapData = Store.get('map_drawings', {});
+  mapData.work_area = {lat, lng, radius};
+  Store.set('map_drawings', mapData);
+  
+  closeModalWorkArea();
+  updateWorkAreaPopup();
+  mapInstance.panTo([lat, lng]);
+  ARGOS.toast(`Área atualizada: ${(radius/1000).toFixed(2)}km de raio.`);
+}
+
+function changeWorkAreaType(){
+  // Modal para mudar tipo de delimitação
+  const modal = document.createElement('div');
+  modal.id = 'modal_work_area_type';
+  modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:10000;';
+  
+  const content = document.createElement('div');
+  content.style.cssText = 'background:#1a1a2e; border:1px solid var(--border); border-radius:12px; padding:24px; width:90%; max-width:400px; box-shadow:0 10px 40px rgba(0,0,0,0.5);';
+  
+  content.innerHTML = `
+    <h3 style="margin-top:0; margin-bottom:20px;">Tipo de Delimitação</h3>
+    <p style="color:var(--muted); margin-bottom:16px;">Escolha como delimitar a área de trabalho:</p>
+    
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <button class="btn btn-secondary" style="width:100%; justify-content:center;" onclick="closeModalWorkAreaType(); editWorkArea()">
+        🔵 Raio Circular (Atual)
+      </button>
+      <button class="btn btn-secondary" style="width:100%; justify-content:center;" onclick="drawPolygonWorkArea()">
+        🔷 Polígono Personalizado
+      </button>
+      <button class="btn btn-secondary" style="width:100%; justify-content:center;" onclick="drawRectangleWorkArea()">
+        📦 Retângulo
+      </button>
+      <hr style="border:none; border-top:1px solid var(--border); margin:10px 0;">
+      <button class="btn btn-secondary" onclick="closeModalWorkAreaType()">Cancelar</button>
+    </div>
+  `;
+  
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+}
+
+function closeModalWorkAreaType(){
+  const modal = document.getElementById('modal_work_area_type');
+  if(modal) modal.remove();
+}
+
+function drawPolygonWorkArea(){
+  closeModalWorkAreaType();
+  ARGOS.toast('Clique no mapa para desenhar o polígono. Duplo-clique para finalizar.');
+  // Usar Leaflet Draw para polígonos
+  toggleDrawMode('polygon');
+}
+
+function drawRectangleWorkArea(){
+  closeModalWorkAreaType();
+  ARGOS.toast('Implementação de retângulo - use raio circular ou polígono por enquanto.');
+}
+
+
 function saveTeamPosition(teamId, latLng){
   const mapData = Store.get('map_drawings', {});
   if(!mapData.team_positions) mapData.team_positions = {};
@@ -318,10 +484,65 @@ function panToTeam(teamId){
 }
 
 function addNewTeamToMap(){
-  const teamId = prompt('Identificador da equipe (ex: GUA-01, AER-02):', 'GUA-');
-  if(!teamId || !teamId.trim()) return;
+  // Modal para adicionar equipe com tipo
+  const modal = document.createElement('div');
+  modal.id = 'modal_add_team_type';
+  modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:10000;';
   
-  const tid = teamId.trim().toUpperCase();
+  const content = document.createElement('div');
+  content.style.cssText = 'background:#1a1a2e; border:1px solid var(--border); border-radius:12px; padding:24px; width:90%; max-width:500px; max-height:90vh; overflow-y:auto; box-shadow:0 10px 40px rgba(0,0,0,0.5);';
+  
+  content.innerHTML = `
+    <h3 style="margin-top:0; margin-bottom:20px;">Adicionar em Campo</h3>
+    
+    <div style="margin-bottom:16px;">
+      <label style="display:block; margin-bottom:8px;"><strong>ID/Identificador</strong></label>
+      <input id="new_team_id" type="text" placeholder="Ex: GUA-01, AER-02, BOM-03" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;">
+    </div>
+    
+    <div style="margin-bottom:16px;">
+      <label style="display:block; margin-bottom:8px;"><strong>Tipo em Campo</strong></label>
+      <select id="new_team_type" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;">
+        <option value="">Selecione...</option>
+        <option value="equipe">👥 Equipe</option>
+        <option value="linha_defesa">🛡️ Linha de Defesa</option>
+        <option value="aceiro">🪚 Aceiro</option>
+        <option value="posto_comando">📡 Posto de Comando</option>
+      </select>
+    </div>
+    
+    <div style="margin-bottom:20px;">
+      <label style="display:block; margin-bottom:8px;"><strong>Observações</strong></label>
+      <textarea id="new_team_notes" placeholder="Ex: Flanco Norte, 5 pessoas, equipado..." rows="3" style="padding:10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); width:100%; box-sizing:border-box;"></textarea>
+    </div>
+    
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button class="btn btn-secondary" onclick="closeModalAddTeam()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmAddTeamToMap()">Adicionar</button>
+    </div>
+  `;
+  
+  modal.appendChild(content);
+  document.body.appendChild(modal);
+  document.getElementById('new_team_id').focus();
+}
+
+function closeModalAddTeam(){
+  const modal = document.getElementById('modal_add_team_type');
+  if(modal) modal.remove();
+}
+
+function confirmAddTeamToMap(){
+  const teamId = document.getElementById('new_team_id').value.trim();
+  const teamType = document.getElementById('new_team_type').value;
+  const teamNotes = document.getElementById('new_team_notes').value.trim();
+  
+  if(!teamId || !teamType) {
+    ARGOS.toast('Preencha ID e Tipo.');
+    return;
+  }
+  
+  const tid = teamId.toUpperCase();
   
   // Verificar se já existe
   if(teamMarkers[tid]) {
@@ -329,31 +550,62 @@ function addNewTeamToMap(){
     return;
   }
   
+  closeModalAddTeam();
+  
   // Posição padrão próxima ao PC
   const lat = -15.604 + (Math.random() - 0.5) * 0.005;
   const lng = -56.095 + (Math.random() - 0.5) * 0.005;
   
-  // Cores padrão para equipes
-  const colors = ['#3B82F6', '#EF4444', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899', '#06B6D4'];
-  const color = colors[Object.keys(teamMarkers).length % colors.length];
+  // Cores por tipo
+  const typeColors = {
+    'equipe': '#3B82F6',
+    'linha_defesa': '#22c55e',
+    'aceiro': '#f59e0b',
+    'posto_comando': '#0ea5e9'
+  };
   
-  const icon = L.divIcon({
-    html: `<div style="background:${color}; width:20px; height:20px; border-radius:50%; border:3px solid #fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:11px; color:#fff; font-weight:bold; box-shadow:0 2px 4px rgba(0,0,0,0.3);">${tid.slice(-2)}</div>`,
+  const typeIcons = {
+    'equipe': '👥',
+    'linha_defesa': '🛡️',
+    'aceiro': '🪚',
+    'posto_comando': '📡'
+  };
+  
+  const color = typeColors[teamType] || '#3B82F6';
+  const icon = typeIcons[teamType] || '●';
+  
+  // Criar ícone personalizado
+  const markerIcon = L.divIcon({
+    html: `<div style="background:${color}; width:28px; height:28px; border-radius:50%; border:3px solid #fff; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow:0 2px 4px rgba(0,0,0,0.3);">${icon}</div>`,
     className: '',
-    iconSize: [26, 26]
+    iconSize: [34, 34]
   });
   
-  const marker = L.marker([lat, lng], {icon, draggable: true}).addTo(mapInstance);
-  updateTeamPopup(marker, tid, lat, lng);
+  const marker = L.marker([lat, lng], {icon: markerIcon, draggable: true}).addTo(mapInstance);
+  
+  // Criar popup
+  const popupContent = `
+    <div>
+      <b>${tid}</b> <span style="font-size:12px; color:#999;">- ${teamType === 'equipe' ? '👥 Equipe' : teamType === 'linha_defesa' ? '🛡️ Linha de Defesa' : teamType === 'aceiro' ? '🪚 Aceiro' : '📡 Posto de Comando'}</span><br>
+      <small>Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</small>
+      ${teamNotes ? `<br><small><em>${teamNotes}</em></small>` : ''}
+      <br>
+      <button class="btn btn-secondary" style="font-size:11px; margin-top:8px; width:100%; margin-bottom:4px;" onclick="editTeamPosition('${tid}')">📍 Editar Coords</button>
+      <button class="btn btn-secondary" style="font-size:11px; width:100%; margin-bottom:4px;" onclick="editTeamNotes('${tid}')">📝 Editar Notas</button>
+      <button class="btn btn-danger" style="font-size:11px; width:100%;" onclick="removeTeamFromMap('${tid}')">🗑️ Remover</button>
+    </div>
+  `;
+  
+  marker.bindPopup(popupContent);
   
   marker.on('dragend', () => { 
     const pos = marker.getLatLng();
-    saveTeamPosition(tid, pos);
-    updateTeamPopup(marker, tid, pos.lat, pos.lng);
+    saveTeamData(tid, {lat: pos.lat, lng: pos.lng, type: teamType, notes: teamNotes});
+    marker.setPopupContent(updateTeamPopupContent(tid, pos.lat, pos.lng, teamType, teamNotes));
   });
   
-  teamMarkers[tid] = {marker, color};
-  saveTeamPosition(tid, {lat, lng});
+  teamMarkers[tid] = {marker, color, type: teamType, notes: teamNotes};
+  saveTeamData(tid, {lat, lng, type: teamType, notes: teamNotes});
   
   // Atualizar painel de controle
   const teamIds = Object.keys(teamMarkers);
@@ -361,7 +613,67 @@ function addNewTeamToMap(){
   renderTeamsList(teamIds);
   
   mapInstance.panTo([lat, lng]);
-  ARGOS.toast(`Equipe ${tid} adicionada ao mapa.`);
+  ARGOS.toast(`${tid} (${teamType}) adicionada ao mapa.`);
+}
+
+function updateTeamPopupContent(teamId, lat, lng, teamType, teamNotes){
+  const typeLabels = {
+    'equipe': '👥 Equipe',
+    'linha_defesa': '🛡️ Linha de Defesa',
+    'aceiro': '🪚 Aceiro',
+    'posto_comando': '📡 Posto de Comando'
+  };
+  
+  return `
+    <div>
+      <b>${teamId}</b> <span style="font-size:12px; color:#999;">- ${typeLabels[teamType] || teamType}</span><br>
+      <small>Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</small>
+      ${teamNotes ? `<br><small><em>${teamNotes}</em></small>` : ''}
+      <br>
+      <button class="btn btn-secondary" style="font-size:11px; margin-top:8px; width:100%; margin-bottom:4px;" onclick="editTeamPosition('${teamId}')">📍 Editar Coords</button>
+      <button class="btn btn-secondary" style="font-size:11px; width:100%; margin-bottom:4px;" onclick="editTeamNotes('${teamId}')">📝 Editar Notas</button>
+      <button class="btn btn-danger" style="font-size:11px; width:100%;" onclick="removeTeamFromMap('${teamId}')">🗑️ Remover</button>
+    </div>
+  `;
+}
+
+function saveTeamData(teamId, data){
+  const mapData = Store.get('map_drawings', {});
+  if(!mapData.team_data) mapData.team_data = {};
+  mapData.team_data[teamId] = data;
+  Store.set('map_drawings', mapData);
+}
+
+function editTeamNotes(teamId){
+  const marker = teamMarkers[teamId];
+  if(!marker) return;
+  
+  const currentNotes = marker.notes || '';
+  const newNotes = prompt('Notas da equipe:', currentNotes);
+  if(newNotes === null) return;
+  
+  marker.notes = newNotes;
+  const pos = marker.marker.getLatLng();
+  saveTeamData(teamId, {lat: pos.lat, lng: pos.lng, type: marker.type, notes: newNotes});
+  marker.marker.setPopupContent(updateTeamPopupContent(teamId, pos.lat, pos.lng, marker.type, newNotes));
+  ARGOS.toast('Notas atualizadas.');
+}
+
+function removeTeamFromMap(teamId){
+  if(confirm(`Remover ${teamId} do mapa?`)) {
+    const marker = teamMarkers[teamId]?.marker;
+    if(marker) mapInstance.removeLayer(marker);
+    delete teamMarkers[teamId];
+    
+    const mapData = Store.get('map_drawings', {});
+    if(mapData.team_data) delete mapData.team_data[teamId];
+    Store.set('map_drawings', mapData);
+    
+    const teamIds = Object.keys(teamMarkers);
+    renderTeamsControlPanel(teamIds);
+    renderTeamsList(teamIds);
+    ARGOS.toast(`${teamId} removida do mapa.`);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
